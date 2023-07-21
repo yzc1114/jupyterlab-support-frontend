@@ -1,6 +1,12 @@
 <template>
-  <div class="notebook-creation" style="width: 1000px;">
+  <div class="notebook-creation" style="">
     <h1>Jupyter Lab实例创建</h1>
+    <div class="node-info">
+      <p>节点名称：{{ node.name }}</p>
+      <p>CPU: {{ node.cpuUsed }} / {{ node.cpuTotal }}</p>
+      <p>内存: {{ node.memoryUsed }} / {{ node.memoryTotal }}</p>
+      <p>GPU: {{ node.gpuUsed }} / {{ node.gpuTotal }}</p>
+    </div>
 
     <form class="form-container">
       <el-form ref="form" :model="form" label-width="120px" size="big" label-position="top"> <!-- 添加 label-position="top" -->
@@ -46,6 +52,38 @@ export default {
   name: 'NotebookCreation',
   data() {
     return {
+      node: {
+        name: 'Node 1',
+        available: true,
+        cpuUsed: 50,
+        cpuTotal: 100,
+        memoryUsed: 512,
+        memoryTotal: 1024,
+        gpuUsed: 2,
+        gpuTotal: 4,
+        instances: [
+          {
+            createTime: "2016-3-21",
+            name: 'Instance 1',
+            status: '运行中',
+            image: 'Image 1',
+            cpuUsage: 20,
+            memoryUsage: 256,
+            gpuUsage: 1,
+            id: '1',
+          },
+          {
+            createTime: "2016-3-21",
+            name: 'Instance 2',
+            status: '创建中',
+            image: 'Image 2',
+            cpuUsage: 30,
+            memoryUsage: 512,
+            gpuUsage: 0,
+            id: '2',
+          },
+        ],
+      },
       form: {
         name: '',
         image: '',
@@ -98,4 +136,18 @@ h2 {
 .el-form-item__label {
   text-align: left; /* 添加文本左对齐样式 */
 }
+
+.node-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+
+.node-info > * {
+  padding: 5px;
+}
+
 </style>

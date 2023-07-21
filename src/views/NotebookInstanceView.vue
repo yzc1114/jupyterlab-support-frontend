@@ -2,5 +2,5 @@
 </script>
 
 <template>
-  <iframe src="http://139.9.165.93:35359/lab" style="width: 1920px; height: 1080px;"></iframe>
+  <iframe src="http://133.133.135.131:30388/lab" style="width: 1920px; height: 1080px;"></iframe>
 </template>
