@@ -1,6 +1,6 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { type Node, type Instance } from '@/types'; // 假设有定义 Node 和 Instance 类型
+import { type Node, type Instance } from '@/typeDefs/typeDefs'; // 假设有定义 Node 和 Instance 类型
 
 export default defineComponent({
   name: 'NodeStatus',
@@ -9,18 +9,28 @@ export default defineComponent({
       type: Object as () => Node,
       required: true,
     },
+    userId: {
+      type: String,
+      required: true,
+    },
+  },
+  mounted() {
+    console.log("NodeStatus userId", this.userId)
   },
   methods: {
     createInstance() {
+      console.log("createInstance clicked, userId: ", this.userId)
       // 处理创建实例的逻辑，可以使用 Vue Router 跳转到创建实例页面
-      // this.$router.push('/create');
+      this.$router.push(`/${this.userId}/${this.node.name}/create`);
     },
     enterInstance(instance: Instance) {
       // 处理进入实例的逻辑，可以使用 Vue Router 跳转到实例使用页面
-      // this.$router.push(`/instance/${instance.id}`);
+      console.log("enterInstance clicked, userId: ", this.userId, "instance: ", instance.name)
+      this.$router.push(`/${this.userId}/instance/${instance.name}`);
     },
     destroyInstance(instance: Instance) {
       // 处理摧毁实例的逻辑
+      this.$emit('delete', instance.name);
     },
   },
 });
@@ -36,9 +46,12 @@ export default defineComponent({
         <p v-else>节点不可用</p>
       </div>
       <div class="node-info-right">
-        <p>CPU: {{ node.cpuUsed }} / {{ node.cpuTotal }}</p>
+        <!-- <p>CPU: {{ node.cpuUsed }} / {{ node.cpuTotal }}</p>
         <p>内存: {{ node.memoryUsed }} / {{ node.memoryTotal }}</p>
-        <p>GPU: {{ node.gpuUsed }} / {{ node.gpuTotal }}</p>
+        <p>GPU: {{ node.gpuUsed }} / {{ node.gpuTotal }}</p> -->
+        <p>CPU: {{ node.cpuTotal }}</p>
+        <p>内存: {{ node.memoryTotal.toFixed(2) }} GB</p>
+        <p>GPU: {{ node.gpuTotal }}</p>
         <el-button @click="createInstance" type="primary">创建实例</el-button>
       </div>
     </div>
@@ -56,8 +69,8 @@ export default defineComponent({
         <el-table-column label="操作" min-width="150px">
           <template #default="scope">
             <div class="instance-buttons">
-              <el-button @click="enterInstance(scope.row)" type="primary" size="mini">进入实例</el-button>
-              <el-button @click="destroyInstance(scope.row)" type="danger" size="mini">摧毁实例</el-button>
+              <el-button @click="enterInstance(scope.row)" type="primary" size="mini" :disabled="scope.row.status !== 'Running'">进入实例</el-button>
+              <el-button @click="destroyInstance(scope.row)" type="danger" size="mini" :disabled="scope.row.status === 'Terminating'">摧毁实例</el-button>
             </div>
           </template>
         </el-table-column>

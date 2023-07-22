@@ -1,15 +1,23 @@
 <template>
   <div class="notebook-creation" style="">
     <h1>Jupyter Lab实例创建</h1>
-    <div class="node-info">
-      <p>节点名称：{{ node.name }}</p>
-      <p>CPU: {{ node.cpuUsed }} / {{ node.cpuTotal }}</p>
-      <p>内存: {{ node.memoryUsed }} / {{ node.memoryTotal }}</p>
-      <p>GPU: {{ node.gpuUsed }} / {{ node.gpuTotal }}</p>
+    <div v-if="nodeLoaded">
+      <div class="node-info">
+        <p>节点名称：{{ node.name }}</p>
+        <p>CPU: {{ node.cpuTotal }}</p>
+        <p>内存: {{ node.memoryTotal.toFixed(2) }} GB</p>
+        <p>GPU: {{ node.gpuTotal }}</p>
+      </div>
+    </div>
+    <div v-else>
+      <div class="node-info">
+        <p>节点信息加载中</p>
+      </div>
     </div>
 
     <form class="form-container">
-      <el-form ref="form" :model="form" label-width="120px" size="big" label-position="top"> <!-- 添加 label-position="top" -->
+      <el-form ref="form" :model="form" label-width="120px" size="big" label-position="top">
+        <!-- 添加 label-position="top" -->
         <el-form-item label="实例名称" prop="name">
           <el-input v-model="form.name" placeholder="请输入实例名称"></el-input>
         </el-form-item>
@@ -23,13 +31,15 @@
         <el-row>
           <el-col :span="12">
             <el-form-item label="CPU" prop="cpu">
-              <el-input-number v-model="form.cpu" :step="0.1" :precision="1" controls-position="right" :min="0"></el-input-number>
+              <el-input-number v-model="form.cpu" :step="0.1" :precision="1" controls-position="right"
+                :min="0"></el-input-number>
             </el-form-item>
           </el-col>
 
           <el-col :span="12">
             <el-form-item label="内存" prop="memory">
-              <el-input-number v-model="form.memory" :step="0.1" :precision="1" controls-position="right" :min="0"></el-input-number>
+              <el-input-number v-model="form.memory" :step="0.1" :precision="1" controls-position="right"
+                :min="0"></el-input-number>
             </el-form-item>
           </el-col>
         </el-row>
@@ -48,42 +58,29 @@
 </template>
 
 <script lang="ts">
+import { getNode, createResource } from '@/api/cluster'
+import { ElMessage } from 'element-plus'; // 引入 Element Plus 组件库中的 Message 组件
+import { type Node, type Instance } from '@/typeDefs/typeDefs'; // 假设有定义 Node 和 Instance 类型
+import { convertToGB } from '@/utils/unit';
+import { parseNode } from '@/utils/parser';
+import { userInfo } from 'os';
+
 export default {
   name: 'NotebookCreation',
   data() {
     return {
       node: {
-        name: 'Node 1',
-        available: true,
+        name: '',
+        available: false,
         cpuUsed: 50,
         cpuTotal: 100,
         memoryUsed: 512,
         memoryTotal: 1024,
         gpuUsed: 2,
         gpuTotal: 4,
-        instances: [
-          {
-            createTime: "2016-3-21",
-            name: 'Instance 1',
-            status: '运行中',
-            image: 'Image 1',
-            cpuUsage: 20,
-            memoryUsage: 256,
-            gpuUsage: 1,
-            id: '1',
-          },
-          {
-            createTime: "2016-3-21",
-            name: 'Instance 2',
-            status: '创建中',
-            image: 'Image 2',
-            cpuUsage: 30,
-            memoryUsage: 512,
-            gpuUsage: 0,
-            id: '2',
-          },
-        ],
+        instances: [] as Instance[],
       },
+      nodeLoaded: false,
       form: {
         name: '',
         image: '',
@@ -91,19 +88,139 @@ export default {
         memory: 0,
         gpu: 0,
       },
-      imageOptions: ['image1', 'image2', 'image3'], // 替换为实际的镜像选项
+      imageOptions: ['jupyter/minimal-notebook:lab-4.0.2'], // 替换为实际的镜像选项
     };
   },
+  async mounted() {
+    await this.loadNode()
+  },
   methods: {
-    createInstance() {
+    async createInstance(): Promise<void> {
       // 处理创建实例的逻辑
       // 跳转回实例管理页面，使用 Vue Router 的方式
-      // this.$router.push('/');
+      let succeeded = await this.doCreateInstance()
+      if (succeeded) {
+        this.$router.push(`/${this.$route.params.userId}/`);
+      }
     },
     cancel() {
       // 取消创建实例，直接跳转回实例管理页面
       // this.$router.push('/');
+      this.$router.push(`/${this.$route.params.userId}/`);
     },
+    async loadNode() {
+      // 加载节点信息
+      let nodeId: string | string[] = this.$route.params.nodeId
+      // assert nodeId is a single string
+      if (Array.isArray(nodeId)) {
+        nodeId = nodeId[0]
+      }
+      let nodeResponse = await getNode(nodeId)
+      if (nodeResponse.code !== 20000) {
+        ElMessage.error(nodeResponse.message);
+        return
+      }
+      let node = nodeResponse.data
+      let nodeInfo: Node = parseNode(node)
+      this.node = nodeInfo
+      setTimeout(() => {
+        this.nodeLoaded = true
+      }, 1000)
+      // this.nodeLoaded = true
+    },
+    async doCreateInstance(): Promise<boolean> {
+      let instanceName = this.form.name
+      let cpu = Number(this.form.cpu.toFixed(1)) * 1000
+      let mem = Number(this.form.memory.toFixed(1)) * 1000
+      // let gpu = Number(this.form.gpu.toFixed(0))
+      let image = this.form.image
+      let nodeName = this.$route.params.nodeId
+      let userId = this.$route.params.userId
+      let podYaml = {
+        "apiVersion": "v1",
+        "kind": "Pod",
+        "metadata": {
+          "namespace": "jupyterlab-management",
+          "name": instanceName,
+          "labels": {
+            "app": "jupyterlab-instance",
+            "name": instanceName,
+            "user": userId,
+          }
+        },
+        "spec": {
+          "securityContext": {
+            "runAsUser": 0,
+            "fsGroup": 0
+          },
+          "containers": [
+            {
+              "name": instanceName,
+              "image": image,
+              "imagePullPolicy": "IfNotPresent",
+              "ports": [
+                {
+                  "containerPort": 8888
+                }
+              ],
+              "command": [
+                "/bin/bash",
+                "-c",
+                "jupyter lab --generate-config &&\ncat > ~/.jupyter/jupyter_lab_config.py << EOF\nc.ServerApp.tornado_settings = {\n'headers': {\n'Content-Security-Policy': \"frame-ancestors 'self' *;\",\n}\n}\nc.ServerApp.token = ''\nc.ServerApp.password = ''\nc.ServerApp.disable_check_xsrf = True\nEOF\nstart.sh jupyter lab --ip='0.0.0.0' --ServerApp.allow_root=True --port 8888 --no-browser"
+              ],
+              "resources": {
+                "requests": {
+                  "memory": `${mem}Mi`,
+                  "cpu": `${cpu}m`
+                }
+              }
+            }
+          ],
+          "nodeName": nodeName,
+          "restartPolicy": "Always"
+        }
+      }
+      console.log("createResource podYaml", podYaml)
+      let createPodResponse = await createResource(podYaml)
+      if (createPodResponse.code != 20000) {
+        ElMessage.error(`创建实例失败，原因：${createPodResponse.message}`);
+        return false
+      }
+      let serviceYaml = {
+        "apiVersion": "v1",
+        "kind": "Service",
+        "metadata": {
+          "name": `${instanceName}-svc`,
+          "namespace": "jupyterlab-management",
+          "labels": {
+            "app": "jupyterlab-instance",
+            "name": `${instanceName}-svc`
+          }
+        },
+        "spec": {
+          "type": "NodePort",
+          "ports": [
+            {
+              "port": 8888,
+              "targetPort": 8888,
+              "protocol": "TCP",
+              "name": "http"
+            }
+          ],
+          "selector": {
+            "name": instanceName,
+          }
+        }
+      }
+      let createServiceResponse = await createResource(serviceYaml)
+      if (createServiceResponse.code != 20000) {
+        ElMessage.error(`创建实例服务失败，原因：${createServiceResponse.message}`);
+        return false
+      }
+
+      ElMessage.success("创建实例成功");
+      return true
+    }
   },
 };
 </script>
@@ -112,29 +229,29 @@ export default {
 .notebook-creation {
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* 修改为 flex-start */
+  align-items: flex-start;
   margin-bottom: 20px;
 }
 
 .form-container {
   width: 100%;
-  display: flex; /* 添加 display: flex */
-  flex-direction: column; /* 添加 flex-direction: column */
-  align-items: flex-start; /* 添加 align-items: flex-start */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .button-container {
   margin-top: 20px;
-  text-align: left; /* 修改为 text-align: left */
+  text-align: left;
 }
 
 h2 {
   margin-top: 0;
-  text-align: left; /* 修改为 text-align: left */
+  text-align: left;
 }
 
 .el-form-item__label {
-  text-align: left; /* 添加文本左对齐样式 */
+  text-align: left;
 }
 
 .node-info {
@@ -146,8 +263,7 @@ h2 {
 }
 
 
-.node-info > * {
+.node-info>* {
   padding: 5px;
 }
-
 </style>

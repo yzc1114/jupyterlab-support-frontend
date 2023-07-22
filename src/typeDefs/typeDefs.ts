@@ -18,4 +18,5 @@ export interface Instance {
     cpuUsage: number;
     memoryUsage: number;
     gpuUsage: number;
+    createTime: string;
 }

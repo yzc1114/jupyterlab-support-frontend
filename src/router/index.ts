@@ -8,17 +8,17 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/:user_id/',
+      path: '/:userId/',
       name: 'NotebookManagement',
       component: NotebookManagementView,
     },
     {
-      path: '/:user_id/:node_id/create',
+      path: '/:userId/:nodeId/create',
       name: 'NotebookCreation',
       component: NotebookCreationView,
     },
     {
-      path: '/:user_id/instance/:id',
+      path: '/:userId/instance/:instanceName',
       name: 'NotebookInstance',
       component: NotebookInstanceView,
     },
