@@ -10,8 +10,8 @@
                         <el-input :disabled="!userSampleCheckboxes.sampleSetName" v-model="userSampleSearchModel.sampleSetName"></el-input>
                     </el-form-item>
                     <el-form-item label="类型">
-                        <el-select v-model="userSampleSearchModel.type" :placeholder="1">
-                            <el-option label="未指定" value=""></el-option>
+                        <el-select v-model="userSampleSearchModel.type" placeholder="未指定">
+                            <el-option label="未指定" value="0"></el-option>
                             <el-option label="场景识别" value="1"></el-option>
                             <el-option label="分割分类" value="2"></el-option>
                             <el-option label="目标检测" value="3"></el-option>
@@ -19,8 +19,8 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item label="来源">
-                        <el-select v-model="userSampleSearchModel.source" placeholder="1">
-                            <el-option label="未指定" value=""></el-option>
+                        <el-select v-model="userSampleSearchModel.source" placeholder="未指定">
+                            <el-option label="未指定" value="0"></el-option>
                             <el-option label="本地上传" value="1"></el-option>
                             <el-option label="平台制作" value="2"></el-option>
                         </el-select>
@@ -32,8 +32,8 @@
                             controls-position="right"></el-input-number>
                     </el-form-item>
                     <el-form-item label="样本格式" v-model="userSampleSearchModel.format">
-                        <el-select v-model="userSampleSearchModel.format" placeholder="请选择">
-                            <el-option label="未指定" value=""></el-option>
+                        <el-select v-model="userSampleSearchModel.format" placeholder="未指定">
+                            <el-option label="未指定" value="0"></el-option>
                             <el-option label="tif" value="1"></el-option>
                             <el-option label="png" value="2"></el-option>
                             <el-option label="jpg" value="3"></el-option>
@@ -56,8 +56,8 @@
                         <el-input :disabled="!platformSampleCheckboxes.sampleSetName" v-model="platformSampleSearchModel.sampleSetName"></el-input>
                     </el-form-item>
                     <el-form-item label="类型">
-                        <el-select v-model="platformSampleSearchModel.type" placeholder="请选择">
-                            <el-option label="未指定" value="未指定"></el-option>
+                        <el-select v-model="platformSampleSearchModel.type" placeholder="未指定">
+                            <el-option label="未指定" value="0"></el-option>
                             <el-option label="场景识别" value="1"></el-option>
                             <el-option label="分割分类" value="2"></el-option>
                             <el-option label="目标检测" value="3"></el-option>
@@ -111,10 +111,10 @@ var defaultUserSampleSearchModel = {
     pageSize: 10,
     pageNum: 1,
     sampleSetName: '测试用户上传样本集',
-    type: "未指定",
+    type: "0",
     bands: 1,
-    source: "未指定",
-    format: "未指定",
+    source: "0",
+    format: "0",
 }
 
 var defaultPlatformSapleSearchParams = {
@@ -131,7 +131,7 @@ var defaultPlatformSampleSearchModel = {
     pageSize: 10,
     pageNum: 1,
     sampleSetName: '测试用户上传样本集',
-    type: "未指定",
+    type: "0",
     bands: 1,
     resolution: 10,
 }
@@ -204,9 +204,9 @@ export default defineComponent({
             let userSampleSearchParams = Object.assign({}, defaultUserSampleSearchParams)
             userSampleSearchParams.bands = this.userSampleCheckboxes.bands ? userSampleSearchModel.bands : null
             userSampleSearchParams.sampleSetName = this.userSampleCheckboxes.sampleSetName ? userSampleSearchModel.sampleSetName : null
-            userSampleSearchParams.format = userSampleSearchModel.format === "未指定" ? null : userSampleSearchModel.format
-            userSampleSearchParams.source = userSampleSearchModel.source === "未指定" ? null : Number(userSampleSearchModel.source)
-            userSampleSearchParams.type = userSampleSearchModel.type === "未指定" ? null : Number(userSampleSearchModel.type)
+            userSampleSearchParams.format = userSampleSearchModel.format === "0" ? null : userSampleSearchModel.format
+            userSampleSearchParams.source = userSampleSearchModel.source === "0" ? null : Number(userSampleSearchModel.source)
+            userSampleSearchParams.type = userSampleSearchModel.type === "0" ? null : Number(userSampleSearchModel.type)
             console.log("searchUserSample request", userSampleSearchParams)
             const response = await getUserSampleList(userSampleSearchParams)
             console.log("searchUserSample response", response)
@@ -224,7 +224,7 @@ export default defineComponent({
             platformSampleSearchParams.bands = this.platformSampleCheckboxes.bands ? platformSampleSearchModel.bands : null
             platformSampleSearchParams.resolution = this.platformSampleCheckboxes.resolution ? platformSampleSearchModel.resolution : null
             platformSampleSearchParams.sampleSetName = this.platformSampleCheckboxes.sampleSetName ? platformSampleSearchModel.sampleSetName : null
-            platformSampleSearchParams.type = platformSampleSearchModel.type === "未指定" ? null : Number(platformSampleSearchModel.type)
+            platformSampleSearchParams.type = platformSampleSearchModel.type === "0" ? null : Number(platformSampleSearchModel.type)
             console.log("searchPlatformSample request", platformSampleSearchParams)
             const response = await getPlatformSampleList(platformSampleSearchParams)
             console.log("searchPlatformSample response", response)
