@@ -1,4 +1,4 @@
-import apiClient from './index'
+import { k8sClient } from './index'
 
 
 const region = "test"
@@ -585,7 +585,7 @@ export const listAllNodes = async () => {
         }
     }
     let labels = {}
-    return listResources("Node", 1, maxLimit, null, labels, region)
+    return listResources("Node", 1, maxLimit, null, labels)
 }
 
 export const listAllPods = async (namespace: string, labels: object) => {
@@ -2540,6 +2540,125 @@ export const listAllServices = async (namespace: string, labels: object) => {
     return listResources("Service", page, maxLimit, namespace, labels)
 }
 
+
+export const listAllCodeSnippets = async() => {
+    if (mock) {
+        return {
+            "code": 20000,
+            "message": null,
+            "exId": 0,
+            "data": {
+                "apiVersion": "doslab.iscas/v1",
+                "kind": "CodeSnippetList",
+                "metadata": {
+                    "name": "get-code-snippets",
+                    "totalCount": 2,
+                    "currentPage": 1,
+                    "totalPage": 1,
+                    "itemsPerPage": 100,
+                    "conditions": "{}"
+                },
+                "items": [
+                    {
+                        "apiVersion": "doslab.iscas/v1",
+                        "kind": "CodeSnippet",
+                        "metadata": {
+                            "annotations": {
+                                "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"doslab.iscas/v1\",\"kind\":\"CodeSnippet\",\"metadata\":{\"annotations\":{},\"name\":\"full-code-test.py\"},\"spec\":{\"codeDir\":\"full-code\",\"codeName\":\"test.py\",\"codeType\":\"full\",\"content\":\"import os\\n\\nprint(\\\"Hello World\\\")\",\"language\":\"py\"}}\n"
+                            },
+                            "creationTimestamp": "2023-07-14T03:06:31Z",
+                            "generation": 1,
+                            "managedFields": [
+                                {
+                                    "apiVersion": "doslab.iscas/v1",
+                                    "fieldsType": "FieldsV1",
+                                    "fieldsV1": {
+                                        "f:metadata": {
+                                            "f:annotations": {
+                                                ".": {},
+                                                "f:kubectl.kubernetes.io/last-applied-configuration": {}
+                                            }
+                                        },
+                                        "f:spec": {
+                                            ".": {},
+                                            "f:codeDir": {},
+                                            "f:codeName": {},
+                                            "f:codeType": {},
+                                            "f:content": {},
+                                            "f:language": {}
+                                        }
+                                    },
+                                    "manager": "kubectl-client-side-apply",
+                                    "operation": "Update",
+                                    "time": "2023-07-14T03:06:31Z"
+                                }
+                            ],
+                            "name": "full-code-test.py",
+                            "resourceVersion": "5456728",
+                            "uid": "b5f51a42-40f9-4f45-9bb6-41fa33e36199"
+                        },
+                        "spec": {
+                            "codeDir": "full-code",
+                            "codeName": "test.py",
+                            "codeType": "full",
+                            "content": "import os\n\nprint(\"Hello World\")",
+                            "language": "py"
+                        }
+                    },
+                    {
+                        "apiVersion": "doslab.iscas/v1",
+                        "kind": "CodeSnippet",
+                        "metadata": {
+                            "annotations": {
+                                "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"doslab.iscas/v1\",\"kind\":\"CodeSnippet\",\"metadata\":{\"annotations\":{},\"name\":\"snippet-code-test2.py\"},\"spec\":{\"codeDir\":\"snippet-code\",\"codeName\":\"test2.py\",\"codeType\":\"snippet\",\"content\":\"import os\\n\\nprint(\\\"test2.py\\\")\",\"language\":\"py\"}}\n"
+                            },
+                            "creationTimestamp": "2023-07-14T03:06:31Z",
+                            "generation": 1,
+                            "managedFields": [
+                                {
+                                    "apiVersion": "doslab.iscas/v1",
+                                    "fieldsType": "FieldsV1",
+                                    "fieldsV1": {
+                                        "f:metadata": {
+                                            "f:annotations": {
+                                                ".": {},
+                                                "f:kubectl.kubernetes.io/last-applied-configuration": {}
+                                            }
+                                        },
+                                        "f:spec": {
+                                            ".": {},
+                                            "f:codeDir": {},
+                                            "f:codeName": {},
+                                            "f:codeType": {},
+                                            "f:content": {},
+                                            "f:language": {}
+                                        }
+                                    },
+                                    "manager": "kubectl-client-side-apply",
+                                    "operation": "Update",
+                                    "time": "2023-07-14T03:06:31Z"
+                                }
+                            ],
+                            "name": "snippet-code-test2.py",
+                            "resourceVersion": "5456727",
+                            "uid": "7b7c58b7-6ca3-4d98-be93-6b88e8599743"
+                        },
+                        "spec": {
+                            "codeDir": "snippet-code",
+                            "codeName": "test2.py",
+                            "codeType": "snippet",
+                            "content": "import os\n\nprint(\"test2.py\")",
+                            "language": "py"
+                        }
+                    }
+                ]
+            }
+        }
+    }
+    let page = 1
+    return listResources("doslab.iscas.CodeSnippet", page, maxLimit, null, {})
+}
+
 export const getService = async (name: string, namespace: string, labels: object) => {
     if (mock) {
         return {
@@ -3222,7 +3341,7 @@ export const listResources = async (fullkind: string, page: number, limit: numbe
         region,
     };
 
-    const response = await apiClient.post('/kubesys/kube/listResources', requestData);
+    const response = await k8sClient.post('/kubesys/kube/listResources', requestData);
     return response.data;
 }
 
@@ -3235,7 +3354,7 @@ export const getResource = async (fullkind: string, name: string, namespace: str
         region,
     };
 
-    const response = await apiClient.post('/kubesys/kube/getResource', requestData);
+    const response = await k8sClient.post('/kubesys/kube/getResource', requestData);
     return response.data;
 };
 
@@ -3247,7 +3366,7 @@ export const deleteResource = async (fullkind: string, name: string, namespace: 
         region,
     };
 
-    const response = await apiClient.post('/kubesys/kube/deleteResource', requestData);
+    const response = await k8sClient.post('/kubesys/kube/deleteResource', requestData);
     return response.data;
 }
 
@@ -3426,7 +3545,7 @@ export const createResource = async (yaml: any) => {
         "region": region,
         "data": yaml
     }
-    const response = await apiClient.post('/kubesys/kube/createResource', requestData);
+    const response = await k8sClient.post('/kubesys/kube/createResource', requestData);
     return response.data;
 }
 

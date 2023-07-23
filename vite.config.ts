@@ -18,10 +18,15 @@ export default defineConfig({
   server: {
     cors: true,
     proxy: {
-      '/api': {
+      '/k8sApi': {
         target: 'http://139.9.165.93:30308', // 修改为你的后端接口地址
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''), // 将请求中的/api字符串去除
+        rewrite: (path) => path.replace(/^\/k8sApi/, ''),
+      },
+      '/sampleApi': {
+        target: 'http://60.10.63.2:18070', // 修改为你的后端接口地址
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/sampleApi/, ''),
       },
     },
   },

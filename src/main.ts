@@ -8,21 +8,18 @@ import 'element-plus/dist/index.css'
 import App from './App.vue'
 import router from './router'
 
-import apiClient from './api/index';
+import { k8sClient, sampleClient } from './api/index';
 const app = createApp(App)
 
 const config = {
-    ip: "139.9.165.93",
-    port: "30308",
     namespace: 'jupyterlab-management',
 };
-  
-// 提供全局常量信息
-app.provide('config', config);
+
 
 app.use(router)
 app.use(ElementPlus)
 app.use(VueAxios, axios)
-app.config.globalProperties.$api = apiClient
+app.config.globalProperties.$k8sClient = k8sClient
+app.config.globalProperties.$sampleClient = sampleClient
 app.config.globalProperties.$config = config;
 app.mount('#app')

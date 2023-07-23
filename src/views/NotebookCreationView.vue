@@ -31,15 +31,13 @@
         <el-row>
           <el-col :span="12">
             <el-form-item label="CPU" prop="cpu">
-              <el-input-number v-model="form.cpu" :step="0.1" :precision="1" controls-position="right"
-                :min="0"></el-input-number>
+              <el-input-number :min="0.1" v-model="form.cpu" :step="0.1" :precision="1" controls-position="right"></el-input-number>
             </el-form-item>
           </el-col>
 
           <el-col :span="12">
             <el-form-item label="内存" prop="memory">
-              <el-input-number v-model="form.memory" :step="0.1" :precision="1" controls-position="right"
-                :min="0"></el-input-number>
+              <el-input-number :min="0.1" v-model="form.memory" :step="0.1" :precision="1" controls-position="right"></el-input-number>
             </el-form-item>
           </el-col>
         </el-row>
@@ -58,12 +56,13 @@
 </template>
 
 <script lang="ts">
-import { getNode, createResource } from '@/api/cluster'
+import { defineComponent } from 'vue'
+import NodeStatus from '@/components/NodeStatus.vue'
+import { listAllNodes, listAllPods, getService, getNode, createResource } from '@/api/cluster'
+import { parseNode } from '@/utils/parser'
+import { type UserSampleSet, type UserSampleApiResponse, type UserSampleSetQueryParams, type PlatformSampleSet, type PlatformSampleApiResponse, type PlatformSampleSetQueryParams, getUserSampleList, getPlatformSampleList } from '@/api/samples'
 import { ElMessage } from 'element-plus'; // 引入 Element Plus 组件库中的 Message 组件
 import { type Node, type Instance } from '@/typeDefs/typeDefs'; // 假设有定义 Node 和 Instance 类型
-import { convertToGB } from '@/utils/unit';
-import { parseNode } from '@/utils/parser';
-import { userInfo } from 'os';
 
 export default {
   name: 'NotebookCreation',
