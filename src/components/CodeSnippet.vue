@@ -3,12 +3,12 @@
 
     <el-dialog title="代码片段快捷复制粘贴界面" v-model="dialogVisible" width="800px">
         <el-tabs v-model="activeTab">
-            <el-tab-pane v-for="(tab, tabName, index) in codeTabs" :label="tabName" :name="tabName" :key="tabName">
+            <el-tab-pane v-for="(tab, tabName, index) in codeTabs" :label="(tabName as string)" :name="tabName" :key="tabName">
 
                 <div class="snippet-container">
                     <el-collapse v-if="Object.keys(tab).length > 0">
                         <el-collapse-item :key="folderName" v-for="(folder, folderName, index2) in tab"
-                            :title="folderName">
+                            :title="(folderName as string)">
                             <div class="code-list">
                                 <el-card v-for="code in folder" :key="code.name">
                                     <div class="code-title-and-button">

@@ -69,8 +69,8 @@ export default defineComponent({
         <el-table-column label="操作" min-width="150px">
           <template #default="scope">
             <div class="instance-buttons">
-              <el-button @click="enterInstance(scope.row)" type="primary" size="mini" :disabled="scope.row.status !== 'Running'">进入实例</el-button>
-              <el-button @click="destroyInstance(scope.row)" type="danger" size="mini" :disabled="scope.row.status === 'Terminating'">摧毁实例</el-button>
+              <el-button @click="enterInstance(scope.row)" type="primary" :disabled="scope.row.status !== 'Running'">进入实例</el-button>
+              <el-button @click="destroyInstance(scope.row)" type="danger" :disabled="scope.row.status === 'Terminating'">摧毁实例</el-button>
             </div>
           </template>
         </el-table-column>

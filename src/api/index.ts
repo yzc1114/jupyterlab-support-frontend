@@ -16,7 +16,7 @@ export const sampleClient = axios.create({
 k8sClient.interceptors.request.use(
     (config) => {
         // Add your fixed headers here
-        config.headers['Authorization'] = 'Bearer k4m9cmqtkhtz7dsocyh7n1q7fidf3fwhusgu5ajo8y4ludvecop7xa3xusombrdrmaiidaggd55662kwlxn14kbbauqzclmxk2kynhjwzlqr0asohesufhjfb7xzldfpnqwfqjxwr2rrupzxfbjvwx0xqxr4nicoo3wvdwq9h8ef0ccz6y2vnlnmum2nc3qxrnvbqzffbljoumrc8hb9bgzijzkdwewbagqlrmmwcgcgsavtb64llknhvaxfeqsf';
+        config.headers['Authorization'] = import.meta.env.VITE_K8S_AUTHORIZATION
         config.headers['user'] = 'admin';
         return config;
     },

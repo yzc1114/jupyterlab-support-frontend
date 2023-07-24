@@ -8,6 +8,6 @@
     "paths": {
       "@/*": ["*", "src/*", "src/api/*", "src/util/*", "src/typeDefs/*"],
     },
-    "types": ["element-plus/global"]
+    // "include": ["node_modules/element-plus/global.d.ts"]
   }
 }

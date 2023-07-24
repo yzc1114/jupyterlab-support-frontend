@@ -11,15 +11,9 @@ import router from './router'
 import { k8sClient, sampleClient } from './api/index';
 const app = createApp(App)
 
-const config = {
-    namespace: 'jupyterlab-management',
-};
-
-
 app.use(router)
 app.use(ElementPlus)
 app.use(VueAxios, axios)
 app.config.globalProperties.$k8sClient = k8sClient
 app.config.globalProperties.$sampleClient = sampleClient
-app.config.globalProperties.$config = config;
 app.mount('#app')

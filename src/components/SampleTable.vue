@@ -43,14 +43,6 @@ export default defineComponent({
     methods: {
         copyStorageLocation(storageLocation: string) {
             copyToClipboard(storageLocation)
-            // console.log("copyStorageLocation clicked, storageLocation: ", storageLocation)
-            // const el = document.createElement('textarea');
-            // el.value = storageLocation;
-            // document.body.appendChild(el);
-            // el.select();
-            // document.execCommand('copy');
-            // document.body.removeChild(el);
-            // this.$message.success('地址已复制到剪贴板！');
             ElMessage.success('地址已复制到剪贴板！');
         },
         handlePageChange(page: number) {
