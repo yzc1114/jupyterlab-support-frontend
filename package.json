@@ -23,7 +23,8 @@
     "vue-axios": "^3.5.2",
     "vue-codemirror": "^6.1.1",
     "vue-codemirror6": "^1.1.22",
-    "vue-router": "^4.2.2"
+    "vue-router": "^4.2.2",
+    "vue3-scale-box": "^0.1.9"
   },
   "devDependencies": {
     "@tsconfig/node18": "^2.0.1",
