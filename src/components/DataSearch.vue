@@ -11,7 +11,7 @@
                 <el-col :span="12">
                     <el-date-picker v-model="dataSearchModel.dateRange" type="daterange" range-separator="To"
                         start-placeholder="开始日期" end-placeholder="结束日期" format="YYYY/MM/DD" value-format="YYYY-MM-DD"
-                        :default-value="[new Date(2020, 1, 1), new Date(2023, 1, 1)]" />
+                        :default-value="[new Date(), new Date()]" />
                 </el-col>
             </el-row>
 
@@ -79,18 +79,18 @@
 
         <div v-if="dataSearchResult">
             <el-table :data="dataSearchResult.data.datas" style="width: 100%">
-                <el-table-column label="选择" width="120">
+                <el-table-column label="选择" min-width="40">
                     <template #default="{row}">
                     <el-checkbox v-model="dataSearchResultSelectedImages[row.thumbUrl]"></el-checkbox>
                 </template>
                 </el-table-column>
                 
                 <el-table-column prop="name" label="名称" />
-                <el-table-column prop="satelliteId" label="卫星" />
-                <el-table-column prop="sensorId" label="传感器" />
-                <el-table-column prop="receiveTime" label="接收时间" />
-                <el-table-column prop="cloudPercent" label="云量" />
-                <el-table-column prop="sources" label="来源" />
+                <el-table-column prop="satelliteId" label="卫星" min-width="80" />
+                <el-table-column prop="sensorId" label="传感器" min-width="80"/>
+                <el-table-column prop="receiveTime" label="接收时间" min-width="150"/>
+                <el-table-column prop="cloudPercent" label="云量" min-width="80"/>
+                <el-table-column prop="sources" label="来源" min-width="200" />
                 <el-table-column label="缩略图" >
                     <template #default="{row}">
                         <img :src="row.thumbUrl" alt="" style="width: 100px; height: 100px;">
@@ -130,41 +130,41 @@ var defaultDataSearchParams = {
     maxImageGsd: 0,
     minCloudPercent: 0,
     minImageGsd: 0,
-    offset: 0,
-    limit: 0,
+    offset: 1,
+    limit: 10,
     satelliteList: [],
     startTime: "",
-    topology: 0,
+    topology: 1,
     endTime: "",
     maxCloudPercent: 0,
     cityId: 0,
     countyId: 0,
-    provinceId: 0,
-    regionLevel: 0,
-    regionName: "",
+    provinceId: 110000000000,
+    regionLevel: 1,
+    regionName: "北京市",
     filterSatelliteList: [],
     ifThumbUrl: false,
 } as DataRequestParams
 
 var defaultDataSearchModel = {
-    dateRange: Array<string>(),
+    dateRange: ['2022-07-22', '2023-07-22'],
     minCloudPercent: 0,
     maxCloudPercent: 20,
     minImageGSD: 0,
-    maxImageGSD: 20,
+    maxImageGSD: 25,
     regionSelected: [],
     satellites: {
         "GF1": {
-            "PMS1": false, "PMS2": false, "WFV1": false, "WFV2": false, "WFV3": false, "WFV4": false
+            "PMS1": true, "PMS2": true, "WFV1": true, "WFV2": true, "WFV3": true, "WFV4": true
         },
         "GF2": {
-            "PMS1": false, "PMS2": false
+            "PMS1": true, "PMS2": true
         },
         "GF6": {
-            "WFV": false, "PMS": false
+            "WFV": true, "PMS": true
         },
         "GF7": {
-            "BWD": false, "DLC": false, "FWD": false, "SLA": false
+            "BWD": true, "DLC": true, "FWD": true, "SLA": true
         }
     } as { [key: string]: { [key: string]: boolean } },
 }
@@ -188,17 +188,6 @@ export default defineComponent({
             dataSearchModel: defaultDataSearchModel,
             dataSearchResult: null as DataResponse | null,
             dataSearchResultSelectedImages: {} as { [key: string]: boolean },
-            tableColumns: [
-                { label: '名称', prop: 'name' },
-                { label: '创建时间', prop: 'gmtCreate' },
-                { label: '数量', prop: 'number' },
-                { label: '类型', prop: 'typeStr' },
-                { label: '格式', prop: 'format' },
-                { label: '波段数', prop: 'bands' },
-                { label: '分辨率', prop: 'resolution' },
-                { label: '类别数', prop: 'classNumber' },
-                { label: '操作', prop: 'storageLocation' },
-            ],
             pagination: {
                 total: 0,
                 currentPage: 1,
@@ -250,9 +239,11 @@ export default defineComponent({
                     )
                 }
             }
-            params.offset = (this.pagination.currentPage - 1) * this.pagination.pageSize
+            params.offset = (this.pagination.currentPage - 1) * this.pagination.pageSize + 1
             params.limit = this.pagination.pageSize
+            console.log("getDataList params", params)
             let response = await getDataList(params)
+            console.log("getDataList response", response)
             if (response.code !== 200) {
                 ElMessage.error(`搜索失败，原因：${response.message}`)
                 return
@@ -307,10 +298,18 @@ export default defineComponent({
             let selectedImages = []
             for (let thumbUrl in this.dataSearchResultSelectedImages) {
                 if (this.dataSearchResultSelectedImages[thumbUrl]) {
+                    thumbUrl = `\"${thumbUrl}\"`
                     selectedImages.push(thumbUrl)
                 }
             }
-
+            if (selectedImages.length === 0) {
+                ElMessage.info('请先选择要复制的数据！')
+                return
+            }
+            // convert selectedImages to string
+            let selectedImagesString = `[${selectedImages.join(", ")}]`
+            copyToClipboard(selectedImagesString)
+            ElMessage.success('链接已复制到剪贴板！');
         }
     },
 });

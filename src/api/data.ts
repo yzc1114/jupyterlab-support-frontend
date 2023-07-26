@@ -1,6 +1,6 @@
 import { dataClient } from './index'
 
-const mock = true;
+const mock = false;
 
 export interface Satellite {
     satelliteId: string;
@@ -28,7 +28,7 @@ export interface SatelliteImage {
 }
 
 export interface DataRequestParams {
-    satelliteSensorImageModeList: SatelliteSensorImageMode[];
+    satelliteSensorImageModeList: [];
     exhibite: number;
     maxImageGsd: number;
     minCloudPercent: number;
@@ -295,8 +295,6 @@ export const getDataList = async (params: DataRequestParams): Promise<DataRespon
             "success": true
         }
     }
-    const response = await dataClient.get('/yjcImage/search/high/data/normal', {
-        params,
-    })
+    const response = await dataClient.post('/yjcImage/search/high/data/normal', params)
     return response.data;
 };
