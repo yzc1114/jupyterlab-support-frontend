@@ -10,6 +10,12 @@ export const sampleClient = axios.create({
     timeout: 10000, // Set a reasonable timeout value
 });
 
+export const dataClient = axios.create({
+    baseURL: '/dataApi',
+    timeout: 10000, // Set a reasonable timeout value
+});
+
+
 
 
 // Add a request interceptor

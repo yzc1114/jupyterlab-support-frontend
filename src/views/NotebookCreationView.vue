@@ -28,7 +28,7 @@
           </el-select>
         </el-form-item>
 
-        <el-row>
+        <el-row class="row-buttons">
           <el-col :span="12">
             <el-form-item label="CPU" prop="cpu">
               <el-input-number :min="0.1" v-model="form.cpu" :step="0.1" :precision="1" controls-position="right"></el-input-number>
@@ -265,4 +265,9 @@ h2 {
 .node-info>* {
   padding: 5px;
 }
+
+.row-buttons >*{
+  padding-right: 5px;
+}
+
 </style>

@@ -1,7 +1,7 @@
 <template>
-    <el-button type="primary" @click="sampleDataSearchVisible = true">数据样本检索</el-button>
+    <el-button type="primary" @click="sampleDataSearchVisible = true">样本检索</el-button>
 
-    <el-dialog v-model="sampleDataSearchVisible" title="数据样本检索" @close="resetSearchForm">
+    <el-dialog v-model="sampleDataSearchVisible" title="样本检索" @close="resetSearchForm">
         <el-tabs v-model="activeTab" @tab-click="resetSearchForm">
             <el-tab-pane label="用户样本检索" name="userSample">
                 <el-form :model="userSampleSearchModel" ref="userSampleForm" label-width="100px">

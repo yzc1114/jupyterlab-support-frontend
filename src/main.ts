@@ -8,7 +8,7 @@ import 'element-plus/dist/index.css'
 import App from './App.vue'
 import router from './router'
 
-import { k8sClient, sampleClient } from './api/index';
+import { k8sClient, sampleClient, dataClient } from './api/index';
 const app = createApp(App)
 
 app.use(router)
@@ -16,4 +16,5 @@ app.use(ElementPlus)
 app.use(VueAxios, axios)
 app.config.globalProperties.$k8sClient = k8sClient
 app.config.globalProperties.$sampleClient = sampleClient
+app.config.globalProperties.$dataClient = dataClient
 app.mount('#app')

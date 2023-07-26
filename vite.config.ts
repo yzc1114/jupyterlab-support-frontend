@@ -36,6 +36,11 @@ export default defineConfig(({ command, mode }) => {
           changeOrigin: true,
           rewrite: (path: string) => path.replace(/^\/sampleApi/, ''),
         },
+        '/dataApi': {
+          target: 'https://www.cpeos.org.cn',
+          changeOrigin: true,
+          rewrite: (path: string) => path.replace(/^\/dataApi/, ''),
+        }
       },
     }
   }

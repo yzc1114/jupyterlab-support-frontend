@@ -11,6 +11,10 @@
           </SampleSearch>
         </div>
         <div>
+          <DataSearch :userId="Array.isArray($route.params.userId) ? $route.params.userId[0] : $route.params.userId">
+          </DataSearch>
+        </div>
+        <div>
           <CodeSnippet :=""></CodeSnippet>
         </div>
       </div>
@@ -27,15 +31,16 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import SampleSearch from '@/components/SampleSearch.vue'
-import CodeSnippet from '../components/CodeSnippet.vue'
+import DataSearch from '@/components/DataSearch.vue'
+import CodeSnippet from '@/components/CodeSnippet.vue'
 import { getService } from '@/api/cluster'
 import { ElMessage } from 'element-plus'; // 引入 Element Plus 组件库中的 Message 组件
-
 
 export default defineComponent({
   name: 'NotebookManagement',
   components: {
     SampleSearch,
+    DataSearch,
     CodeSnippet
   },
   data() {
