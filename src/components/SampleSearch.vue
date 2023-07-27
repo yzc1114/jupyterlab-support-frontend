@@ -1,13 +1,13 @@
 <template>
-    <el-button type="primary" @click="sampleDataSearchVisible = true">样本检索</el-button>
-
-    <el-dialog v-model="sampleDataSearchVisible" title="样本检索" @close="resetSearchForm">
-        <el-tabs v-model="activeTab" @tab-click="resetSearchForm">
-            <el-tab-pane label="用户样本检索" name="userSample">
+    <el-tabs class="el-tabs-flex" v-model="activeTab" @tab-click="resetSearchForm">
+        <el-tab-pane class="el-tab-pane-custom" label="用户样本检索" name="userSample">
+            <div class="container">
                 <el-form :model="userSampleSearchModel" ref="userSampleForm" label-width="100px">
                     <el-form-item label="样本集名称">
-                        <el-checkbox class="specify-check-box" v-model="userSampleCheckboxes.sampleSetName" label="指定" size="large" />
-                        <el-input :disabled="!userSampleCheckboxes.sampleSetName" v-model="userSampleSearchModel.sampleSetName"></el-input>
+                        <el-checkbox class="specify-check-box" v-model="userSampleCheckboxes.sampleSetName" label="指定"
+                            size="large" />
+                        <el-input :disabled="!userSampleCheckboxes.sampleSetName"
+                            v-model="userSampleSearchModel.sampleSetName"></el-input>
                     </el-form-item>
                     <el-form-item label="类型">
                         <el-select v-model="userSampleSearchModel.type" placeholder="未指定">
@@ -26,7 +26,8 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item label="波段数">
-                        <el-checkbox class="specify-check-box" v-model="userSampleCheckboxes.bands" label="指定" size="large" />
+                        <el-checkbox class="specify-check-box" v-model="userSampleCheckboxes.bands" label="指定"
+                            size="large" />
                         <el-input-number :min="1" :disabled="!userSampleCheckboxes.bands"
                             v-model="userSampleSearchModel.bands" :step="1" :precision="0"
                             controls-position="right"></el-input-number>
@@ -42,18 +43,22 @@
                 </el-form>
                 <el-button type="primary" @click="searchUserSample">搜索</el-button>
 
-                <div v-if="userSampleSearchResult">
-                    <sample-table :table-data="userSampleSearchResult.data.list" :columns="tableColumns"
-                        :pagination="userSamplePagination" @page-change="handleUserSamplePageChange"></sample-table>
-                </div>
+                <sample-table v-if="userSampleSearchResult" :table-data="userSampleSearchResult.data.list"
+                    :columns="tableColumns" :pagination="userSamplePagination"
+                    @page-change="handleUserSamplePageChange"></sample-table>
+            </div>
 
-            </el-tab-pane>
 
-            <el-tab-pane label="平台样本检索" name="platformSample">
+        </el-tab-pane>
+
+        <el-tab-pane class="el-tab-pane-custom" label="平台样本检索" name="platformSample">
+            <div class="container">
                 <el-form :model="platformSampleSearchModel" ref="platformSampleForm" label-width="100px">
                     <el-form-item label="样本集名称">
-                        <el-checkbox class="specify-check-box" v-model="platformSampleCheckboxes.sampleSetName" label="指定" size="large" />
-                        <el-input :disabled="!platformSampleCheckboxes.sampleSetName" v-model="platformSampleSearchModel.sampleSetName"></el-input>
+                        <el-checkbox class="specify-check-box" v-model="platformSampleCheckboxes.sampleSetName" label="指定"
+                            size="large" />
+                        <el-input :disabled="!platformSampleCheckboxes.sampleSetName"
+                            v-model="platformSampleSearchModel.sampleSetName"></el-input>
                     </el-form-item>
                     <el-form-item label="类型">
                         <el-select v-model="platformSampleSearchModel.type" placeholder="未指定">
@@ -65,27 +70,28 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item label="波段数">
-                        <el-checkbox class="specify-check-box" v-model="platformSampleCheckboxes.bands" label="指定" size="large" />
+                        <el-checkbox class="specify-check-box" v-model="platformSampleCheckboxes.bands" label="指定"
+                            size="large" />
                         <el-input-number :min="1" :disabled="!platformSampleCheckboxes.bands"
                             v-model="platformSampleSearchModel.bands" :step="1" :precision="0"
                             controls-position="right"></el-input-number>
                     </el-form-item>
                     <el-form-item label="分辨率" v-model="platformSampleSearchModel.resolution">
-                        <el-checkbox class="specify-check-box" v-model="platformSampleCheckboxes.resolution" label="指定" size="large" />
+                        <el-checkbox class="specify-check-box" v-model="platformSampleCheckboxes.resolution" label="指定"
+                            size="large" />
                         <el-input-number :min="1" :disabled="!platformSampleCheckboxes.resolution"
                             v-model="platformSampleSearchModel.resolution" :step="1" :precision="0"
                             controls-position="right"></el-input-number>
                     </el-form-item>
                 </el-form>
                 <el-button type="primary" @click="searchPlatformSample">搜索</el-button>
-                <div v-if="platformSampleSearchResult">
-                    <sample-table :table-data="platformSampleSearchResult.data.list" :columns="tableColumns"
-                        :pagination="platformSamplePagination" @page-change="handlePlatformSamplePageChange"></sample-table>
-                </div>
+                <sample-table v-if="platformSampleSearchResult" :table-data="platformSampleSearchResult.data.list"
+                    :columns="tableColumns" :pagination="platformSamplePagination"
+                    @page-change="handlePlatformSamplePageChange"></sample-table>
+            </div>
 
-            </el-tab-pane>
-        </el-tabs>
-    </el-dialog>
+        </el-tab-pane>
+    </el-tabs>
 </template>
 
 <script lang="ts">
@@ -144,8 +150,6 @@ export default defineComponent({
     data() {
         return {
             instanceServiceUrl: "",
-            sampleDataSearchVisible: false,
-            codeSnippetVisible: false,
             activeTab: 'userSample', // Active tab (userSample or platformSample)
             userSampleSearchModel: defaultUserSampleSearchModel,
             userSampleSearchResult: null as UserSampleApiResponse | null, // Holds the user sample search result
@@ -260,7 +264,41 @@ export default defineComponent({
 
 
 <style scoped>
+
+.el-tabs-flex {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    align-items: flex-start;
+}
 .specify-check-box {
     margin-right: 10px;
 }
+
+/* .el-tabs :deep(.el-tabs__content){
+    width: 100%;
+} */
+:deep(.el-tabs__content) {
+    width: 100%;
+}
+
+.el-tabs__content {
+    width: 100%;
+}
+
+.el-tab-pane-custom {
+    width: 100%;
+    height: 100%;
+}
+
 </style>

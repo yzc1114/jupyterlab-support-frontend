@@ -1,6 +1,6 @@
 import { sampleClient } from './index'
 
-const mock = false;
+const mock = true;
 
 export interface UserSampleSet {
     id: number;

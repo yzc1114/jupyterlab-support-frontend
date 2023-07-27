@@ -1,14 +1,12 @@
 <template>
-    <el-button type="primary" @click="dataSearchVisible = true">数据检索</el-button>
-
-    <el-dialog v-model="dataSearchVisible" title="数据检索" @close="resetSearchForm">
+    <div class="container">
         <el-form :model="dataSearchModel" ref="dataSearchForm" label-width="100px">
 
             <el-row class="form-item-row">
-                <el-col :span="2" class="form-item-label">
+                <el-col :span="4" class="form-item-label">
                     时间范围
                 </el-col>
-                <el-col :span="12">
+                <el-col :span="20">
                     <el-date-picker v-model="dataSearchModel.dateRange" type="daterange" range-separator="To"
                         start-placeholder="开始日期" end-placeholder="结束日期" format="YYYY/MM/DD" value-format="YYYY-MM-DD"
                         :default-value="[new Date(), new Date()]" />
@@ -16,10 +14,10 @@
             </el-row>
 
             <el-row class="form-item-row">
-                <el-col :span="2" class="form-item-label">
+                <el-col :span="4" class="form-item-label">
                     云量范围
                 </el-col>
-                <el-col :span="12">
+                <el-col :span="20">
                     <el-input-number v-model="dataSearchModel.minCloudPercent" @input="onCloudPercentInputChange('left')"
                         type="number" placeholder="最小云量" :min="0" :max="100" style="width: 100px;"></el-input-number>
                     <span style="margin: 0 10px;">-</span>
@@ -29,10 +27,10 @@
             </el-row>
 
             <el-row class="form-item-row">
-                <el-col :span="2" class="form-item-label">
+                <el-col :span="4" class="form-item-label">
                     GSD范围
                 </el-col>
-                <el-col :span="12">
+                <el-col :span="20">
                     <el-input-number v-model="dataSearchModel.minImageGSD" @input="onGsdInputChange('left')" type="number"
                         placeholder="最小Gsd" :min="0" :max="100" style="width: 100px;"></el-input-number>
                     <span style="margin: 0 10px;">-</span>
@@ -44,10 +42,10 @@
             <el-row class="form-item-row">
                 <el-col :span="24" v-for="(satelliteSensors, satelliteName, index) in dataSearchModel.satellites"
                     class="satellite-form">
-                    <el-col :span="2" class="form-item-label">
+                    <el-col :span="4" class="form-item-label">
                         {{ index == 0 ? "卫星传感器" : "" }}
                     </el-col>
-                    <el-col :span="12">
+                    <el-col :span="20">
                         <div :key="satelliteName" class="button-group-wrapper">
                             <div class="button-group-label">{{ satelliteName }}</div>
                             <el-button-group class="button-group">
@@ -64,10 +62,10 @@
             </el-row>
 
             <el-row class="form-item-row">
-                <el-col :span="2" class="form-item-label">
+                <el-col :span="4" class="form-item-label">
                     区域
                 </el-col>
-                <el-col :span="12">
+                <el-col :span="20">
                     <el-cascader style="width: 300px;" :options="regionData" :props="regionDataCascaderProps"
                         v-model="dataSearchModel.regionSelected" @change="console.log(dataSearchModel.regionSelected)">
                     </el-cascader>
@@ -76,36 +74,38 @@
 
         </el-form>
         <el-button type="primary" @click="searchData">搜索</el-button>
-
-        <div v-if="dataSearchResult">
-            <el-table :data="dataSearchResult.data.datas" style="width: 100%">
+        <div class="table-container">
+            <el-table v-if="dataSearchResult !== null" :data="dataSearchResult.data.datas" class="el-table">
                 <el-table-column label="选择" min-width="40">
-                    <template #default="{row}">
-                    <el-checkbox v-model="dataSearchResultSelectedImages[row.thumbUrl]"></el-checkbox>
-                </template>
+                    <template #default="{ row }">
+                        <el-checkbox v-model="dataSearchResultSelectedImages[row.thumbUrl]"></el-checkbox>
+                    </template>
                 </el-table-column>
-                
+
                 <el-table-column prop="name" label="名称" />
                 <el-table-column prop="satelliteId" label="卫星" min-width="80" />
-                <el-table-column prop="sensorId" label="传感器" min-width="80"/>
-                <el-table-column prop="receiveTime" label="接收时间" min-width="150"/>
-                <el-table-column prop="cloudPercent" label="云量" min-width="80"/>
+                <el-table-column prop="sensorId" label="传感器" min-width="80" />
+                <el-table-column prop="receiveTime" label="接收时间" min-width="150" />
+                <el-table-column prop="cloudPercent" label="云量" min-width="80" />
                 <el-table-column prop="sources" label="来源" min-width="200" />
-                <el-table-column label="缩略图" >
-                    <template #default="{row}">
+                <el-table-column label="缩略图">
+                    <template #default="{ row }">
                         <img :src="row.thumbUrl" alt="" style="width: 100px; height: 100px;">
                     </template>
                 </el-table-column>
             </el-table>
-            <el-pagination v-if="pagination.total > 10" @current-change="handlePageChange"
-                :current-page="pagination.currentPage" :page-size="pagination.pageSize" layout="prev, pager, next"
-                :total="pagination.total"></el-pagination>
+        </div>
+        <div v-if="dataSearchResult">
+            <div class="pagination">
+                <el-pagination v-if="pagination.total > 10" @current-change="handlePageChange"
+                    :current-page="pagination.currentPage" :page-size="pagination.pageSize" layout="prev, pager, next"
+                    :total="pagination.total"></el-pagination>
+            </div>
             <el-button @click="copyDataLinks" type="primary">
                 复制选中链接
             </el-button>
         </div>
-
-    </el-dialog>
+    </div>
 </template>
 
 <script lang="ts">
@@ -239,7 +239,8 @@ export default defineComponent({
                     )
                 }
             }
-            params.offset = (this.pagination.currentPage - 1) * this.pagination.pageSize + 1
+            // params.offset = (this.pagination.currentPage - 1) * this.pagination.pageSize + 1 ?????????
+            params.offset = this.pagination.currentPage
             params.limit = this.pagination.pageSize
             console.log("getDataList params", params)
             let response = await getDataList(params)
@@ -317,6 +318,38 @@ export default defineComponent({
 
 
 <style scoped>
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    align-items: flex-start;
+}
+
+.auto-height {
+    flex: 0 0 auto;
+}
+
+.el-table {
+    /* position: absolute; */
+    width: 100%;
+    height: 100%;
+}
+
+
+.table-container {
+    flex: auto;
+    overflow: auto;
+    position: relative;
+    width: 100%;
+}
+
+/* .el-table {
+    height: 100% !important;
+    width: 100%;
+} */
+
 .specify-check-box {
     margin-right: 10px;
 }
@@ -377,5 +410,17 @@ export default defineComponent({
     display: flex;
     /* align-items: center;
     justify-content: center; */
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.table {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
 }
 </style>

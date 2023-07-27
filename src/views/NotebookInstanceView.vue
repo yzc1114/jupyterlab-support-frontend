@@ -3,29 +3,40 @@
 
 <template>
   <div class="container">
-      <!-- 使用Flex布局排列按钮 -->
-      <div class="buttons">
-        <el-button @click="returnManagement">返回</el-button>
-        <div>
+    <!-- 使用Flex布局排列按钮 -->
+    <div class="buttons">
+      <el-button @click="returnManagement">返回</el-button>
+
+      <div class="sideTabButtons">
+        <el-button v-if="showSideTab !== null" @click="sideTabDeactivate()" link>
+          收起
+        </el-button>
+        <el-button type="primary" @click="sideTabActivate('SampleSearch')">样本检索</el-button>
+        <el-button type="primary" @click="sideTabActivate('DataSearch')">数据检索</el-button>
+        <el-button type="primary" @click="sideTabActivate('CodeSnippet')">代码片段</el-button>
+      </div>
+    </div>
+
+    <!-- iframe位于按钮下方，使用Flex布局左对齐 -->
+    <div class="iframe-body-sty" v-if="instanceServiceUrl !== ''">
+      <iframe :class="iframeCSS.jupyterlab" :src="instanceServiceUrl"></iframe>
+      <div :class="iframeCSS.sideTab" v-if="showSideTab !== null">
+        <div class="sideTabContainer" v-show="showSideTab == 'SampleSearch'">
           <SampleSearch :userId="Array.isArray($route.params.userId) ? $route.params.userId[0] : $route.params.userId">
           </SampleSearch>
         </div>
-        <div>
+        <div class="sideTabContainer" v-show="showSideTab == 'DataSearch'">
           <DataSearch :userId="Array.isArray($route.params.userId) ? $route.params.userId[0] : $route.params.userId">
           </DataSearch>
         </div>
-        <div>
-          <CodeSnippet :=""></CodeSnippet>
+        <div class="sideTabContainer" v-show="showSideTab == 'CodeSnippet'">
+          <CodeSnippet v-show="showSideTab == 'CodeSnippet'" :=""></CodeSnippet>
         </div>
       </div>
-
-      <!-- iframe位于按钮下方，使用Flex布局左对齐 -->
-      <div class="iframe-body-sty" v-if="instanceServiceUrl !== ''">
-        <iframe id="iframe-shrink" :src="instanceServiceUrl"></iframe>
-      </div>
-
-
     </div>
+
+
+  </div>
 </template>
 
 <script lang="ts">
@@ -46,8 +57,6 @@ export default defineComponent({
   data() {
     return {
       instanceServiceUrl: "",
-      sampleDataSearchVisible: false,
-      codeSnippetVisible: false,
       activeTab: 'userSample', // Active tab (userSample or platformSample)
       userSampleSearchParams: {
         pageSize: 10,
@@ -65,6 +74,11 @@ export default defineComponent({
         // Add other parameters as needed
       },
       platformSampleSearchResult: null, // Holds the platform sample search result
+      iframeCSS: {
+        jupyterlab: 'jupyterlab-without-sidetab',
+        sideTab: 'side-tab',
+      },
+      showSideTab: null as null|'CodeSnippet'|'SampleSearch'|'DataSearch',
     };
   },
   async mounted() {
@@ -90,6 +104,14 @@ export default defineComponent({
     },
     returnManagement() {
       this.$router.push(`/${this.$route.params.userId}/`);
+    },
+    sideTabActivate(sideTab: 'SampleSearch'|'DataSearch'|'CodeSnippet') {
+      this.showSideTab = sideTab
+      this.iframeCSS.jupyterlab = 'jupyterlab-with-sidetab'
+    },
+    sideTabDeactivate() {
+      this.showSideTab = null
+      this.iframeCSS.jupyterlab = 'jupyterlab-without-sidetab'
     }
   }
 });
@@ -105,24 +127,50 @@ export default defineComponent({
 }
 
 .buttons {
+  width: 100%;
   display: flex;
   flex-direction: row;
   margin-bottom: 10px;
+  justify-content: space-between;
   /* 可以调整按钮与iframe之间的间距 */
 }
 
-.buttons>*:not(:last-child) {
+.sideTabButtons {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 10px;
+}
+
+.sideTabButtons>*:not(:last-child) {
   margin-right: 10px;
   /* 调整按钮之间的横向间距 */
 }
 
 .iframe-body-sty {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  height: 97%;
+}
+
+.jupyterlab-without-sidetab {
   width: 100%;
   height: 100%;
 }
 
-.iframe-body-sty > #iframe-shrink {
-  width: 100%;
+.jupyterlab-with-sidetab {
+  width: 74%;
+  height: 100%;
+}
+
+
+.side-tab {
+  width: 24%;
+  height: 95%;
+  overflow: auto;
+}
+
+.sideTabContainer {
   height: 100%;
 }
 </style>

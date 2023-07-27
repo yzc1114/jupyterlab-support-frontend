@@ -1,9 +1,8 @@
 <template>
-    <el-button type="primary" @click="enableCodeSnippets">代码快捷粘贴</el-button>
-
-    <el-dialog title="代码片段快捷复制粘贴界面" v-model="dialogVisible" width="800px">
+    <div>
         <el-tabs v-model="activeTab">
-            <el-tab-pane v-for="(tab, tabName, index) in codeTabs" :label="(tabName as string)" :name="tabName" :key="tabName">
+            <el-tab-pane v-for="(tab, tabName, index) in codeTabs" :label="(tabName as string)" :name="tabName"
+                :key="tabName">
 
                 <div class="snippet-container">
                     <el-collapse v-if="Object.keys(tab).length > 0">
@@ -38,7 +37,7 @@
 
             </el-tab-pane>
         </el-tabs>
-    </el-dialog>
+    </div>
 </template>
   
 <script lang="ts">
@@ -98,7 +97,6 @@ export default defineComponent({
                 indentUnit: 4,
                 tabSize: 4,
             },
-            dialogVisible: false,
             activeTab: 'fullCode', // 'fullCode' or 'codeSnippet'
             codeTabs: {} as {
                 [tabName: string]: {
@@ -113,7 +111,7 @@ export default defineComponent({
         };
     },
     mounted() {
-        // this.loadCodes()
+        this.loadCodes()
     },
     props: {
 
@@ -178,7 +176,6 @@ export default defineComponent({
         },
         async enableCodeSnippets() {
             await this.loadCodes()
-            this.dialogVisible = true
         },
     },
 });
@@ -190,8 +187,9 @@ export default defineComponent({
 
 /* Styles for full code container */
 .el-card :deep(.el-card__body) {
-  padding: 10px;
+    padding: 10px;
 }
+
 .code-container {
     display: flex;
     flex-direction: column;
@@ -218,8 +216,8 @@ export default defineComponent({
 .code-title {
     font: 1em sans-serif;
     /* Add styles for code title */
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 }
 
 .code-title-and-button {
