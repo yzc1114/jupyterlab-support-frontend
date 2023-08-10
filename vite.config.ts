@@ -32,7 +32,7 @@ export default defineConfig(({ command, mode }) => {
           rewrite: (path: string) => path.replace(/^\/k8sApi/, ''),
         },
         '/sampleApi': {
-          target: 'http://60.10.63.2:18070', // 修改为你的后端接口地址
+          target: 'http://124.16.188.132:18070', // 修改为你的后端接口地址
           changeOrigin: true,
           rewrite: (path: string) => path.replace(/^\/sampleApi/, ''),
         },
