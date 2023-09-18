@@ -13,13 +13,16 @@
         </el-button>
         <el-button type="primary" @click="sideTabActivate('SampleSearch')">样本检索</el-button>
         <el-button type="primary" @click="sideTabActivate('DataSearch')">数据检索</el-button>
-        <el-button type="primary" @click="sideTabActivate('CodeSnippet')">代码片段</el-button>
+        <!-- <el-button type="primary" @click="sideTabActivate('CodeSnippet')">代码片段</el-button> -->
+        <el-button type="primary" @click="sideTabActivate('CodeRepo')">代码仓库</el-button>
       </div>
     </div>
 
     <!-- iframe位于按钮下方，使用Flex布局左对齐 -->
-    <div class="iframe-body-sty" v-if="instanceServiceUrl !== ''">
+    <!-- <div class="iframe-body-sty" v-if="instanceServiceUrl !== ''"> -->
+    <div class="iframe-body-sty">
       <iframe :class="iframeCSS.jupyterlab" :src="instanceServiceUrl"></iframe>
+      <!-- <iframe :class="iframeCSS.jupyterlab" src="http://127.0.0.1:8000/lab"></iframe> -->
       <div :class="iframeCSS.sideTab" v-if="showSideTab !== null">
         <div class="sideTabContainer" v-show="showSideTab == 'SampleSearch'">
           <SampleSearch :userId="Array.isArray($route.params.userId) ? $route.params.userId[0] : $route.params.userId">
@@ -29,8 +32,11 @@
           <DataSearch :userId="Array.isArray($route.params.userId) ? $route.params.userId[0] : $route.params.userId">
           </DataSearch>
         </div>
-        <div class="sideTabContainer" v-show="showSideTab == 'CodeSnippet'">
+        <!-- <div class="sideTabContainer" v-show="showSideTab == 'CodeSnippet'">
           <CodeSnippet v-show="showSideTab == 'CodeSnippet'" :=""></CodeSnippet>
+        </div> -->
+        <div class="sideTabContainer" v-show="showSideTab == 'CodeRepo'">
+          <CodeRepo v-show="showSideTab == 'CodeRepo'" :userId="Array.isArray($route.params.userId) ? $route.params.userId[0] : $route.params.userId"></CodeRepo>
         </div>
       </div>
     </div>
@@ -44,6 +50,7 @@ import { defineComponent } from 'vue'
 import SampleSearch from '@/components/SampleSearch.vue'
 import DataSearch from '@/components/DataSearch.vue'
 import CodeSnippet from '@/components/CodeSnippet.vue'
+import CodeRepo from '@/components/CodeRepo.vue'
 import { getService } from '@/api/cluster'
 import { ElMessage } from 'element-plus'; // 引入 Element Plus 组件库中的 Message 组件
 
@@ -52,7 +59,8 @@ export default defineComponent({
   components: {
     SampleSearch,
     DataSearch,
-    CodeSnippet
+    CodeSnippet,
+    CodeRepo
   },
   data() {
     return {
@@ -78,7 +86,7 @@ export default defineComponent({
         jupyterlab: 'jupyterlab-without-sidetab',
         sideTab: 'side-tab',
       },
-      showSideTab: null as null|'CodeSnippet'|'SampleSearch'|'DataSearch',
+      showSideTab: null as null|'CodeSnippet'|'SampleSearch'|'DataSearch'|'CodeRepo',
     };
   },
   async mounted() {
@@ -105,7 +113,7 @@ export default defineComponent({
     returnManagement() {
       this.$router.push(`/${this.$route.params.userId}/`);
     },
-    sideTabActivate(sideTab: 'SampleSearch'|'DataSearch'|'CodeSnippet') {
+    sideTabActivate(sideTab: 'SampleSearch'|'DataSearch'|'CodeSnippet'|'CodeRepo') {
       this.showSideTab = sideTab
       this.iframeCSS.jupyterlab = 'jupyterlab-with-sidetab'
     },

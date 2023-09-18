@@ -35,9 +35,9 @@
                     <el-form-item label="样本格式" v-model="userSampleSearchModel.format">
                         <el-select v-model="userSampleSearchModel.format" placeholder="未指定">
                             <el-option label="未指定" value="0"></el-option>
-                            <el-option label="tif" value="1"></el-option>
-                            <el-option label="png" value="2"></el-option>
-                            <el-option label="jpg" value="3"></el-option>
+                            <el-option label="tif" value="tif"></el-option>
+                            <el-option label="png" value="png"></el-option>
+                            <el-option label="jpg" value="jpg"></el-option>
                         </el-select>
                     </el-form-item>
                 </el-form>
@@ -193,11 +193,6 @@ export default defineComponent({
             type: String,
             required: true,
         },
-    },
-    created() {
-        for (let ob of [defaultPlatformSapleSearchParams, defaultUserSampleSearchParams]) {
-            ob.userId = this.userId
-        }
     },
     mounted() {
 

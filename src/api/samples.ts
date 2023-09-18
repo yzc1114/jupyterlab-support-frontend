@@ -1,6 +1,7 @@
 import { sampleClient } from './index'
+import axios from 'axios';
 
-const mock = true;
+const mock = false;
 
 export interface UserSampleSet {
     id: number;

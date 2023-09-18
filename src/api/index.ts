@@ -17,7 +17,6 @@ export const dataClient = axios.create({
 
 
 
-
 // Add a request interceptor
 k8sClient.interceptors.request.use(
     (config) => {
