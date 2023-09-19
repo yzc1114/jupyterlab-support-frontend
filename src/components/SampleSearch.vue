@@ -86,7 +86,7 @@
                     </el-form-item>
                 </el-form>
                 <div class="search-button-container">
-                    <el-button type="primary" @click="searchPlatformSample">搜索</el-button>
+                    <el-button class="search-button" type="primary" @click="searchPlatformSample" size="large">搜索</el-button>
                 </div>
                 <sample-table v-if="platformSampleSearchResult" :table-data="platformSampleSearchResult.data.list"
                     :columns="tableColumns" :pagination="platformSamplePagination"
@@ -332,4 +332,9 @@ export default defineComponent({
              width: 56px !important;
              left: 52px !important;
 } */
+:deep(.el-tabs__item){
+    font-size:calc(100vw * 15 / 1920);
+}
+
+
 </style>

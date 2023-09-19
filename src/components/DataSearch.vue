@@ -49,7 +49,7 @@
                         <div :key="satelliteName" class="button-group-wrapper">
                             <div class="button-group-label">{{ satelliteName }}</div>
                             <el-button-group class="button-group">
-                                <el-button v-for="(sensorEnabled, sensorName, index) in satelliteSensors" :key="sensorName"
+                                <el-button v-for="(sensorEnabled, sensorName, index) in satelliteSensors" :key="sensorName" class="button-group-item"
                                     :type="sensorEnabled ? 'primary' : ''"
                                     @click="dataSearchModel.satellites[satelliteName][sensorName] = !(sensorEnabled as boolean)">
                                     {{ sensorName }}
@@ -448,5 +448,10 @@ export default defineComponent({
 
 .primary-button {
     font-size: calc(100vw * 15 / 1920);
+    width: fit-content;
+}
+
+.button-group-item {
+    width: fit-content;
 }
 </style>

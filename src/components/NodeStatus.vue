@@ -102,6 +102,7 @@ export default defineComponent({
 
 .instance-buttons > button {
   font-size: calc(100vw * 15 / 1920);
+  width: fit-content;
 }
 
 .node-info {
@@ -129,9 +130,9 @@ export default defineComponent({
 }
 
 .node-info-button {
-  width: 120px;
   margin-left: 20px;
   font-size: calc(100vw * 20 / 1920);
+  width: fit-content;
 }
 
 .node-info-right > * {

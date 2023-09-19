@@ -394,6 +394,11 @@ export default defineComponent({
     margin-right: 10px;
 }
 
+:deep(.el-tabs__item){
+    font-size:calc(100vw * 15 / 1920);
+}
+
+
 /* .loading {
     height: 30px;
     width: 30px;
