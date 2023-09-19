@@ -26,6 +26,7 @@
     "vue-axios": "^3.5.2",
     "vue-codemirror": "^6.1.1",
     "vue-codemirror6": "^1.1.22",
+    "vue-loading-overlay": "^6.0.3",
     "vue-router": "^4.2.2",
     "vue3-scale-box": "^0.1.9"
   },

@@ -1,17 +1,34 @@
 <template>
     <div>
-        <el-tabs v-model="activeTab" @tab-change="handleTabChange">
+        <el-tabs v-model="activeTab" @tab-change="handleTabChange" :stretch="true">
             <el-tab-pane v-for="(tab, tabName, index) in codeTabs" :label="(tab.label as string)" :name="tabName"
                 :key="tabName">
 
                 <div class="repo-container">
-                    <el-tree :data="tab.dataSource" :props="props" :expand-on-click-node="false" lazy :load="handleLoadNode">
+                    <el-tree style="min-height: 100px; width: 100%;" v-loading="tab.dataSource == null"
+                        :data="tab.dataSource" :props="props" :expand-on-click-node="false" lazy :load="handleLoadNode">
                         <template #default="{ node, data }">
                             <span class="custom-tree-node">
                                 <span>{{ data.name }}</span>
                                 <span v-if="data.isLeaf === true">
                                     <el-button class="copy-button" type="text" @click="handleFileShow(data)">
                                         {{ '显示' }}
+                                        <loading v-model:active="data.contentLoading"
+                                        class="loading"
+                                        :height="30"
+                                        :width="30"
+                                        color="#007bff"
+                                        background-color="white"
+                                        loader="bars"
+                                        :is-full-page="false"/>
+                                    </el-button>
+                                </span>
+                                <span v-if="data.root === true">
+                                    <el-button class="copy-button" type="text" @click="handleGotoRepo(data)">
+                                        {{ '前往' }}
+                                    </el-button>
+                                    <el-button class="copy-button" type="text" @click="handleCopyCloneCmd(data)">
+                                        {{ '复制clone命令' }}
                                     </el-button>
                                 </span>
                             </span>
@@ -55,6 +72,9 @@ import type Node from 'element-plus/es/components/tree/src/model/node'
 
 import { type Extension } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
+import Loading from 'vue-loading-overlay';
+import 'vue-loading-overlay/dist/css/index.css';
+
 
 const Theme = EditorView.theme({
     "&": {
@@ -86,6 +106,7 @@ export default defineComponent({
     name: 'CodeRepo',
     components: {
         Codemirror,
+        Loading,
     },
     data() {
         return {
@@ -111,12 +132,12 @@ export default defineComponent({
                 'platform': {
                     label: '模型代码',
                     gitOwnerId: 'test',
-                    dataSource: [] as TreeNode[],
+                    dataSource: null as TreeNode[] | null,
                 },
                 'user': {
                     label: '用户代码',
                     gitOwnerId: this.userId,
-                    dataSource: [] as TreeNode[],
+                    dataSource: null as TreeNode[] | null,
                 },
             } as {
                 [key: string]: {
@@ -128,6 +149,12 @@ export default defineComponent({
         };
     },
     async mounted() {
+        // setTimeout(async () => {
+        //     let repos = await this.loadRepos(this.codeTabs[this.activeTab].gitOwnerId)
+        // if (repos) {
+        //     this.codeTabs[this.activeTab].dataSource = repos
+        // }
+        // }, 5000)
         let repos = await this.loadRepos(this.codeTabs[this.activeTab].gitOwnerId)
         if (repos) {
             this.codeTabs[this.activeTab].dataSource = repos
@@ -141,8 +168,18 @@ export default defineComponent({
     },
     methods: {
         async handleTabChange(tabName: string) {
+            // setTimeout(async () => {
+            //     console.log("tab changed", tabName)
+            //     if (this.codeTabs[tabName].dataSource != null && this.codeTabs[tabName].dataSource.length > 0) {
+            //         return
+            //     }
+            //     let repos = await this.loadRepos(this.codeTabs[this.activeTab].gitOwnerId)
+            //     if (repos) {
+            //         this.codeTabs[tabName].dataSource = repos
+            //     }
+            // }, 5000)
             console.log("tab changed", tabName)
-            if (this.codeTabs[tabName].dataSource.length > 0) {
+            if (this.codeTabs[tabName].dataSource != null && this.codeTabs[tabName].dataSource.length > 0) {
                 return
             }
             let repos = await this.loadRepos(this.codeTabs[this.activeTab].gitOwnerId)
@@ -169,7 +206,7 @@ export default defineComponent({
                 return
             }
             let dirPath = data.fullPath
-            let loadedRepoContents = await this.loadRepoContents(this.codeTabs[this.activeTab].gitOwnerId, data.name, dirPath)
+            let loadedRepoContents = await this.loadRepoContents(this.codeTabs[this.activeTab].gitOwnerId, data.repoName, dirPath)
             if (!loadedRepoContents) {
                 resolve(null)
                 console.log("load repo contents failed")
@@ -189,12 +226,27 @@ export default defineComponent({
                 showCodeDialog(data.name, data.content);
                 return
             }
-            let content = await this.loadFileContent(this.codeTabs[this.activeTab].gitOwnerId, data.name, data.fullPath);
+            
+            data.contentLoading = true;
+            setTimeout(async () => {
+                let content = await this.loadFileContent(this.codeTabs[this.activeTab].gitOwnerId, data.repoName, data.fullPath);
+            data.contentLoading = false;
             if (!content) {
                 return;
             }
             data.content = content;
             showCodeDialog(data.name, data.content);
+            }, 5000);
+        },
+        async handleGotoRepo(data: TreeNode) {
+            let url = `${import.meta.env.VITE_GIT_BASE_URL}/${this.codeTabs[this.activeTab].gitOwnerId}/${data.repoName}`
+            // open new browser tab to this url
+            window.open(url);
+        },
+        async handleCopyCloneCmd(data: TreeNode) {
+            let cmd = `git clone ${import.meta.env.VITE_GIT_BASE_URL}/${this.codeTabs[this.activeTab].gitOwnerId}/${data.repoName}.git`
+            copyToClipboard(cmd)
+            ElMessage.success('代码仓库clone命令已复制到剪贴板！');
         },
         async loadRepos(gitOwnerId: string) {
             let getUserReposParams: GetUserReposParams = {
@@ -341,4 +393,12 @@ export default defineComponent({
 .dialog-footer button:first-child {
     margin-right: 10px;
 }
+
+/* .loading {
+    height: 30px;
+    width: 30px;
+    color: RGB(0, 123, 255);
+    background-color: white;
+} */
+
 </style>

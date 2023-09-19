@@ -1,6 +1,7 @@
 <template>
     <div class="table-container">
-        <el-table :data="tableData" class="el-table" element-loading-text="正在加载">
+        <el-table :data="tableData" class="el-table" element-loading-text="正在加载" :cell-style="{ textAlign: 'center' }"
+            :header-cell-style="{ 'text-align': 'center' }">
             <el-table-column v-for="column in columns" :key="column.prop" :label="column.label" :prop="column.prop">
                 <!-- Custom slot for the last column to add a button -->
                 <template v-if="column.prop === 'storageLocation'" v-slot="scope">
@@ -8,12 +9,10 @@
                 </template>
             </el-table-column>
         </el-table>
-        <div class="pagination">
-
+        <div class="pagination" v-if="pagination.total > 10">
+            <el-pagination @current-change="handlePageChange" :current-page="pagination.currentPage"
+                :page-size="pagination.pageSize" layout="prev, pager, next" :total="pagination.total"></el-pagination>
         </div>
-        <el-pagination v-if="pagination.total > 10" @current-change="handlePageChange"
-            :current-page="pagination.currentPage" :page-size="pagination.pageSize" layout="prev, pager, next"
-            :total="pagination.total"></el-pagination>
     </div>
 </template>
   
@@ -60,6 +59,7 @@ export default defineComponent({
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 100%;
 }
 
 .el-table {
@@ -99,6 +99,5 @@ export default defineComponent({
     height: 100% !important;
     width: 100% !important;
 }
-
 </style>
   

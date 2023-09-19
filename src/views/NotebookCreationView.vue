@@ -1,6 +1,6 @@
 <template>
   <div class="notebook-creation" style="">
-    <h1>Jupyter Lab实例创建</h1>
+    <h1 class="creation-title">Jupyter Lab实例创建</h1>
     <div v-if="nodeLoaded">
       <div class="node-info">
         <p>节点名称：{{ node.name }}</p>
@@ -49,8 +49,8 @@
     </form>
 
     <div class="button-container">
-      <el-button type="primary" @click="createInstance">创建实例</el-button>
-      <el-button @click="cancel">取消</el-button>
+      <el-button type="primary" @click="createInstance" size="large">创建实例</el-button>
+      <el-button @click="cancel" size="large">取消</el-button>
     </div>
   </div>
 </template>
@@ -237,6 +237,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  /* font-size: 100px; */
 }
 
 .button-container {
@@ -244,12 +245,12 @@ export default {
   text-align: left;
 }
 
-h2 {
-  margin-top: 0;
-  text-align: left;
+.button-container > button {
+  font-size: calc(100vw * 20 / 1920);
 }
 
-.el-form-item__label {
+h2 {
+  margin-top: 0;
   text-align: left;
 }
 
@@ -259,15 +260,37 @@ h2 {
   align-items: center;
   width: 100%;
   margin-bottom: 20px;
+  font-size: calc(100vw * 25 / 1920);
 }
+
+/* .form-style > .label {
+   font-size: 200px;   
+} */
+
+
 
 
 .node-info>* {
-  padding: 5px;
+  padding-right: 5px;
 }
 
 .row-buttons >*{
   padding-right: 5px;
 }
 
+.creation-title {
+  font-size: calc(100vw * 50 / 1920);
+  margin-bottom: 10px;
+  font-weight: bold;
+} 
+
+</style>
+
+
+<style scoped>
+::v-deep .el-form-item__label {
+  text-align: left; 
+  font-size: calc(100vw * 15 / 1920);
+  /* font-weight: bold; */
+}
 </style>

@@ -73,9 +73,12 @@
             </el-row>
 
         </el-form>
-        <el-button type="primary" @click="searchData">搜索</el-button>
+        <div class="primary-button-container">
+            <el-button type="primary" @click="searchData" size="large" class="primary-button">搜索</el-button>
+        </div>
         <div class="table-container">
-            <el-table v-if="dataSearchResult !== null" :data="dataSearchResult.data.datas" class="el-table">
+            <el-table v-if="dataSearchResult !== null" :data="dataSearchResult.data.datas" class="el-table"
+                :cell-style="{ textAlign: 'center' }" :header-cell-style="{ 'text-align': 'center' }">
                 <el-table-column label="选择" min-width="40">
                     <template #default="{ row }">
                         <el-checkbox v-model="dataSearchResultSelectedImages[row.thumbUrl]"></el-checkbox>
@@ -95,13 +98,15 @@
                 </el-table-column>
             </el-table>
         </div>
-        <div v-if="dataSearchResult">
-            <div class="pagination">
-                <el-pagination v-if="pagination.total > 10" @current-change="handlePageChange"
-                    :current-page="pagination.currentPage" :page-size="pagination.pageSize" layout="prev, pager, next"
-                    :total="pagination.total"></el-pagination>
-            </div>
-            <el-button @click="copyDataLinks" type="primary">
+
+        <div class="pagination" v-if="dataSearchResult">
+            <el-pagination v-if="pagination.total > 10" @current-change="handlePageChange"
+                :current-page="pagination.currentPage" :page-size="pagination.pageSize" layout="prev, pager, next"
+                :total="pagination.total"></el-pagination>
+        </div>
+
+        <div v-if="dataSearchResult" class="primary-button-container">
+            <el-button @click="copyDataLinks" type="primary" size="large" class="primary-button">
                 复制选中链接
             </el-button>
         </div>
@@ -400,6 +405,7 @@ export default defineComponent({
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: calc(100vw * 13 / 1920);
 }
 
 .form-item-row {
@@ -413,6 +419,7 @@ export default defineComponent({
 }
 
 .pagination {
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -422,5 +429,24 @@ export default defineComponent({
     width: 100%;
     height: 100%;
     overflow: auto;
+}
+
+
+:deep(.el-form-item__label) {
+    text-align: left;
+    font-size: calc(100vw * 13 / 1920);
+    /* font-weight: bold; */
+}
+
+
+.primary-button-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.primary-button {
+    font-size: calc(100vw * 15 / 1920);
 }
 </style>

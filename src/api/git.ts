@@ -1,8 +1,7 @@
 import { Octokit } from "@octokit/rest";
-// const { Octokit } = require("@octokit/rest");
 import axios from 'axios';
 
-const gitUrl = "https://api.github.com"
+const gitUrl = import.meta.env.VITE_GIT_API_BASE_URL
 
 const octokit = new Octokit({
     baseUrl: gitUrl,
@@ -17,6 +16,9 @@ export interface TreeNode {
     children: TreeNode[] | null;
     isLeaf: boolean;
     content: string | null;
+    root: boolean;
+    contentLoading: boolean;
+    repoName: string;
 }
 
 export interface GetFileContentParams {
@@ -28,7 +30,7 @@ export interface GetFileContentParams {
 export interface GetFileContentResponse {
     code: number;
     data: {
-        content: string;
+        content: string|null;
     };
 }
 
@@ -3201,7 +3203,10 @@ export const getUserRepos = async (params: GetUserReposParams): Promise<GetUserR
             children: null,
             fullPath: "",
             isLeaf: false,
+            root: true,
             content: null,
+            contentLoading: false,
+            repoName: repo.name,
         }
         result.data.repos.push(repoNode);
     });
@@ -3340,13 +3345,16 @@ export const getRepoContents = async (params: GetRepoContentsParams): Promise<Ge
     if (response.status != 200) {
         return result;
     }
-    response.data.forEach((repo: any) => {
+    response.data.forEach((item: any) => {
         let repoNode: TreeNode = {
-            name: repo.name,
+            name: item.name,
             children: null,
-            fullPath: repo.path,
-            isLeaf: repo.type == "file",
+            fullPath: item.path,
+            root: false,
+            isLeaf: item.type == "file",
             content: null,
+            contentLoading: false,
+            repoName: params.repoName
         }
         result.data.children.push(repoNode);
     });

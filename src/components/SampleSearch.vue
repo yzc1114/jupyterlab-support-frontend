@@ -1,8 +1,8 @@
 <template>
-    <el-tabs class="el-tabs-flex" v-model="activeTab" @tab-click="resetSearchForm">
+    <el-tabs class="el-tabs-flex" v-model="activeTab" @tab-click="resetSearchForm" :stretch="true">
         <el-tab-pane class="el-tab-pane-custom" label="用户样本检索" name="userSample">
             <div class="container">
-                <el-form :model="userSampleSearchModel" ref="userSampleForm" label-width="100px">
+                <el-form :model="userSampleSearchModel" ref="userSampleForm" label-width="100">
                     <el-form-item label="样本集名称">
                         <el-checkbox class="specify-check-box" v-model="userSampleCheckboxes.sampleSetName" label="指定"
                             size="large" />
@@ -41,8 +41,9 @@
                         </el-select>
                     </el-form-item>
                 </el-form>
-                <el-button type="primary" @click="searchUserSample">搜索</el-button>
-
+                <div class="search-button-container">
+                    <el-button class="search-button" type="primary" @click="searchUserSample" size="large">搜索</el-button>
+                </div>
                 <sample-table v-if="userSampleSearchResult" :table-data="userSampleSearchResult.data.list"
                     :columns="tableColumns" :pagination="userSamplePagination"
                     @page-change="handleUserSamplePageChange"></sample-table>
@@ -84,7 +85,9 @@
                             controls-position="right"></el-input-number>
                     </el-form-item>
                 </el-form>
-                <el-button type="primary" @click="searchPlatformSample">搜索</el-button>
+                <div class="search-button-container">
+                    <el-button type="primary" @click="searchPlatformSample">搜索</el-button>
+                </div>
                 <sample-table v-if="platformSampleSearchResult" :table-data="platformSampleSearchResult.data.list"
                     :columns="tableColumns" :pagination="platformSamplePagination"
                     @page-change="handlePlatformSamplePageChange"></sample-table>
@@ -259,14 +262,13 @@ export default defineComponent({
 
 
 <style scoped>
-
-.el-tabs-flex {
+/* .el-tabs-flex {
     width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-}
+    align-items: center;
+} */
 
 .container {
     display: flex;
@@ -276,6 +278,7 @@ export default defineComponent({
     overflow: hidden;
     align-items: flex-start;
 }
+
 .specify-check-box {
     margin-right: 10px;
 }
@@ -287,13 +290,46 @@ export default defineComponent({
     width: 100%;
 }
 
-.el-tabs__content {
-    width: 100%;
-}
+/* :deep(.el-tabs__nav-scroll) {
+	width:100%;
+	margin:0 auto
+} */
 
-.el-tab-pane-custom {
+/* .el-tabs__content {
+    width: 100%;
+} */
+
+/* .el-tab-pane-custom {
     width: 100%;
     height: 100%;
+} */
+
+:deep(.el-form-item__label) {
+    text-align: left;
+    font-size: calc(100vw * 13 / 1920);
+    color: black;
+    /* font-weight: bold; */
 }
 
+:deep(.el-checkbox__label) {
+    text-align: left;
+    font-size: calc(100vw * 30 / 1920);
+    /* font-weight: bold; */
+}
+
+.search-button-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.search-button {
+    font-size: calc(100vw * 15 / 1920);
+}
+
+/* :deep(.el-tabs__active-bar) {
+             width: 56px !important;
+             left: 52px !important;
+} */
 </style>

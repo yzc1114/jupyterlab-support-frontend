@@ -38,12 +38,16 @@ export default defineComponent({
 
 
 <template>
-  <div class="node-status" style="width: 1000px;">
+  <div class="node-status" style="width: 100%;">
     <div class="node-info">
       <div class="node-info-left">
-        <h2>{{ node.name }}</h2>
-        <p v-if="node.available">节点可用</p>
-        <p v-else>节点不可用</p>
+        <div>
+          <h2>{{ node.name }}</h2>
+        </div>
+        <div>
+          <p v-if="node.available">节点可用</p>
+          <p v-else>节点不可用</p>
+        </div>
       </div>
       <div class="node-info-right">
         <!-- <p>CPU: {{ node.cpuUsed }} / {{ node.cpuTotal }}</p>
@@ -52,13 +56,13 @@ export default defineComponent({
         <p>CPU: {{ node.cpuTotal }}</p>
         <p>内存: {{ node.memoryTotal.toFixed(2) }} GB</p>
         <p>GPU: {{ node.gpuTotal }}</p>
-        <el-button @click="createInstance" type="primary">创建实例</el-button>
+        <el-button class="node-info-button" @click="createInstance" size="large" type="primary">创建实例</el-button>
       </div>
     </div>
 
     <div class="instance-table">
-      <h3>节点上的实例</h3>
-      <el-table :data="node.instances" border>
+      <h3 class="instance-table-title">节点上的实例</h3>
+      <el-table :data="node.instances" border :cell-style="{textAlign: 'center', color: 'black', padding: '20px', 'font-size': 'calc(100vw * 18 / 1920)'}" align="center" :header-cell-style="{background:'#fafafa', color:'black', 'text-align': 'center', 'font-size': 'calc(100vw * 18 / 1920)', padding: '20px'}">
         <el-table-column prop="createTime" label="创建时间"></el-table-column>
         <el-table-column prop="name" label="实例名称"></el-table-column>
         <el-table-column prop="status" label="实例状态"></el-table-column>
@@ -69,8 +73,8 @@ export default defineComponent({
         <el-table-column label="操作" min-width="150px">
           <template #default="scope">
             <div class="instance-buttons">
-              <el-button @click="enterInstance(scope.row)" type="primary" :disabled="scope.row.status !== 'Running'">进入实例</el-button>
-              <el-button @click="destroyInstance(scope.row)" type="danger" :disabled="scope.row.status === 'Terminating'">摧毁实例</el-button>
+              <el-button @click="enterInstance(scope.row)" type="primary" :disabled="scope.row.status !== 'Running'" size="large">进入实例</el-button>
+              <el-button @click="destroyInstance(scope.row)" type="danger" :disabled="scope.row.status === 'Terminating'" size="large">摧毁实例</el-button>
             </div>
           </template>
         </el-table-column>
@@ -93,6 +97,11 @@ export default defineComponent({
   justify-content: space-evenly;
   align-items: center;
   width: 100%;
+  /* font-size: calc(100vw * 25 / 1920); */
+}
+
+.instance-buttons > button {
+  font-size: calc(100vw * 15 / 1920);
 }
 
 .node-info {
@@ -101,15 +110,28 @@ export default defineComponent({
   align-items: center;
   width: 100%;
   margin-bottom: 20px;
+  font-size: calc(100vw * 20 / 1920);
 }
 
 .node-info-left {
-  flex-grow: 1;
+  width: 15%;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
+  align-items: center;
 }
 
 .node-info-right {
+  width: 28%;
   display: flex;
   align-items: center;
+  justify-content: space-around;
+}
+
+.node-info-button {
+  width: 120px;
+  margin-left: 20px;
+  font-size: calc(100vw * 20 / 1920);
 }
 
 .node-info-right > * {
@@ -118,6 +140,16 @@ export default defineComponent({
 
 .instance-table {
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.instance-table-title {
+  font-size: calc(100vw * 25 / 1920);
+  font-weight: bold;
+  margin-bottom: 5px;
 }
 
 
@@ -128,5 +160,10 @@ h2 {
 p {
   margin: 5px 0;
 }
+
+/* ::v-deep {
+  .el-form-item
+  width: 90%;
+} */
 
 </style>

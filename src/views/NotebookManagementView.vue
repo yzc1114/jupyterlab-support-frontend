@@ -1,20 +1,17 @@
 <template>
-  <div>
-    <h1>实例管理</h1>
+  <div class="container">
+    <div class="title-container">
+      <h1 class="title">实例管理</h1>
+    </div>
     <!-- list nodes -->
     <!-- <NodeStatus :node="node" /> -->
     <!-- <template v-for="node in nodes" :key="node.name"> -->
-      <!-- 使用 v-for 循环堆叠多个 NodeStatus 组件 -->
-      <!-- <NodeStatus :node="node" />
+    <!-- 使用 v-for 循环堆叠多个 NodeStatus 组件 -->
+    <!-- <NodeStatus :node="node" />
     </template> -->
-    <NodeStatus
-      v-for="n in nodes"
-      :node="n"
-      :user-id="userId"
-      :key="n.name"
-
-      @delete="handleInstanceDelete"
-    />
+    <div class="node-status-container">
+      <NodeStatus v-for="n in nodes" :node="n" :user-id="userId" :key="n.name" @delete="handleInstanceDelete" />
+    </div>
   </div>
 </template>
 
@@ -44,7 +41,7 @@ export default defineComponent({
     clearInterval(this.timerId);
   },
   async mounted() {
-    let userId: string|string[] = this.$route.params.userId
+    let userId: string | string[] = this.$route.params.userId
     if (Array.isArray(userId)) {
       userId = userId[0]
     }
@@ -65,7 +62,7 @@ export default defineComponent({
       let nodes = nodesResponse.data.items
       let namespace = import.meta.env.VITE_NAMESPACE
       console.log("namespace", namespace)
-      let podLabels = {"app": "jupyterlab-instance", "user": this.$route.params.userId}
+      let podLabels = { "app": "jupyterlab-instance", "user": this.$route.params.userId }
       let podsResponse = await listAllPods(namespace, podLabels)
       console.log("podsResponse", podsResponse)
       if (podsResponse.code != 20000) {
@@ -116,3 +113,33 @@ export default defineComponent({
 });
 </script>
 
+<style scoped>
+.container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 90%;
+}
+
+.node-status-container {
+  width: 90%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title {
+  font-size: calc(100vw * 50 / 1920);
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+</style>

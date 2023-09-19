@@ -5,25 +5,26 @@
   <div class="container">
     <!-- 使用Flex布局排列按钮 -->
     <div class="buttons">
-      <el-button @click="returnManagement">返回</el-button>
+      <el-button @click="returnManagement" size="large">返回</el-button>
 
       <div class="sideTabButtons">
         <el-button v-if="showSideTab !== null" @click="sideTabDeactivate()" link>
           收起
         </el-button>
-        <el-button type="primary" @click="sideTabActivate('SampleSearch')">样本检索</el-button>
-        <el-button type="primary" @click="sideTabActivate('DataSearch')">数据检索</el-button>
+        <el-button :type="showingTabButton('SampleSearch')" @click="sideTabActivate('SampleSearch')" size="large">样本检索</el-button>
+        <el-button :type="showingTabButton('DataSearch')" @click="sideTabActivate('DataSearch')" size="large">数据检索</el-button>
         <!-- <el-button type="primary" @click="sideTabActivate('CodeSnippet')">代码片段</el-button> -->
-        <el-button type="primary" @click="sideTabActivate('CodeRepo')">代码仓库</el-button>
+        <el-button :type="showingTabButton('CodeRepo')" @click="sideTabActivate('CodeRepo')" size="large">代码仓库</el-button>
       </div>
     </div>
 
+    <div class="horizontal-divider"></div>
     <!-- iframe位于按钮下方，使用Flex布局左对齐 -->
     <!-- <div class="iframe-body-sty" v-if="instanceServiceUrl !== ''"> -->
     <div class="iframe-body-sty">
       <iframe :class="iframeCSS.jupyterlab" :src="instanceServiceUrl"></iframe>
       <!-- <iframe :class="iframeCSS.jupyterlab" src="http://127.0.0.1:8000/lab"></iframe> -->
-      <div :class="iframeCSS.sideTab" v-if="showSideTab !== null">
+      <div :class="iframeCSS.sideTab" v-if="showSideTab !== null" style="padding-top: 10px;">
         <div class="sideTabContainer" v-show="showSideTab == 'SampleSearch'">
           <SampleSearch :userId="Array.isArray($route.params.userId) ? $route.params.userId[0] : $route.params.userId">
           </SampleSearch>
@@ -65,23 +66,23 @@ export default defineComponent({
   data() {
     return {
       instanceServiceUrl: "",
-      activeTab: 'userSample', // Active tab (userSample or platformSample)
-      userSampleSearchParams: {
-        pageSize: 10,
-        pageNum: 1,
-        sampleSetName: '',
-        type: '',
-        // Add other parameters as needed
-      },
-      userSampleSearchResult: null, // Holds the user sample search result
-      platformSampleSearchParams: {
-        pageSize: 10,
-        pageNum: 1,
-        sampleSetName: '',
-        type: '',
-        // Add other parameters as needed
-      },
-      platformSampleSearchResult: null, // Holds the platform sample search result
+      // activeTab: '', // Active tab (userSample or platformSample)
+      // userSampleSearchParams: {
+      //   pageSize: 10,
+      //   pageNum: 1,
+      //   sampleSetName: '',
+      //   type: '',
+      //   // Add other parameters as needed
+      // },
+      // userSampleSearchResult: null, // Holds the user sample search result
+      // platformSampleSearchParams: {
+      //   pageSize: 10,
+      //   pageNum: 1,
+      //   sampleSetName: '',
+      //   type: '',
+      //   // Add other parameters as needed
+      // },
+      // platformSampleSearchResult: null, // Holds the platform sample search result
       iframeCSS: {
         jupyterlab: 'jupyterlab-without-sidetab',
         sideTab: 'side-tab',
@@ -93,6 +94,10 @@ export default defineComponent({
     await this.loadService()
   },
   methods: {
+    showingTabButton(tabName: string) {
+      console.log("showingTabButton", this.showSideTab, tabName, this.showSideTab == tabName)
+      return this.showSideTab == tabName ? 'primary' : 'normal'
+    },
     async loadService() {
       let instanceName: string | string[] = this.$route.params.instanceName
       // assert instanceName is a single string
@@ -126,6 +131,12 @@ export default defineComponent({
 </script>
 
 <style scoped>
+
+.horizontal-divider {
+  width: 100%;
+  height: 2px;
+  background-color: gray; /* 分界线的颜色 */
+}
 .container {
   display: flex;
   flex-direction: column;
@@ -143,6 +154,10 @@ export default defineComponent({
   /* 可以调整按钮与iframe之间的间距 */
 }
 
+.buttons button {
+  font-size: calc(100vw * 18 / 1920);
+}
+
 .sideTabButtons {
   display: flex;
   flex-direction: row;
@@ -153,6 +168,7 @@ export default defineComponent({
   margin-right: 10px;
   /* 调整按钮之间的横向间距 */
 }
+
 
 .iframe-body-sty {
   display: flex;
