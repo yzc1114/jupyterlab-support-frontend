@@ -22,8 +22,8 @@
     <!-- iframe位于按钮下方，使用Flex布局左对齐 -->
     <!-- <div class="iframe-body-sty" v-if="instanceServiceUrl !== ''"> -->
     <div class="iframe-body-sty">
-      <iframe :class="iframeCSS.jupyterlab" :src="instanceServiceUrl"></iframe>
-      <!-- <iframe :class="iframeCSS.jupyterlab" src="http://127.0.0.1:8000/lab"></iframe> -->
+      <!-- <iframe :class="iframeCSS.jupyterlab" :src="instanceServiceUrl"></iframe> -->
+      <iframe :class="iframeCSS.jupyterlab" src="https://www.cpeos.org.cn/lab"></iframe>
       <div :class="iframeCSS.sideTab" v-if="showSideTab !== null" style="padding-top: 10px;">
         <div class="sideTabContainer" v-show="showSideTab == 'SampleSearch'">
           <SampleSearch :userId="Array.isArray($route.params.userId) ? $route.params.userId[0] : $route.params.userId">

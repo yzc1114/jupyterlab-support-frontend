@@ -14,7 +14,7 @@ export default defineConfig(({ command, mode }) => {
       vue(),
       vueJsx(),
     ],
-    base: './',
+    base: '/aiDesigner/',
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url))
