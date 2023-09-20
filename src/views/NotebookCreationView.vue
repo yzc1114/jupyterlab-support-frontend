@@ -99,13 +99,13 @@ export default {
       // 跳转回实例管理页面，使用 Vue Router 的方式
       let succeeded = await this.doCreateInstance()
       if (succeeded) {
-        this.$router.push(`/${this.$route.params.userId}/`);
+        this.$router.push(`/aiDesigner/${this.$route.params.userId}/`);
       }
     },
     cancel() {
       // 取消创建实例，直接跳转回实例管理页面
       // this.$router.push('/');
-      this.$router.push(`/${this.$route.params.userId}/`);
+      this.$router.push(`/aiDesigner/${this.$route.params.userId}/`);
     },
     async loadNode() {
       // 加载节点信息

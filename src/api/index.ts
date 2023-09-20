@@ -1,17 +1,17 @@
 import axios from 'axios';
 
 export const k8sClient = axios.create({
-    baseURL: '/k8sApi',
+    baseURL: '/aiDesigner/k8sApi',
     timeout: 10000, // Set a reasonable timeout value
 });
 
 export const sampleClient = axios.create({
-    baseURL: '/sampleApi',
+    baseURL: '/aiDesigner/sampleApi',
     timeout: 10000, // Set a reasonable timeout value
 });
 
 export const dataClient = axios.create({
-    baseURL: '/dataApi',
+    baseURL: '/aiDesigner/dataApi',
     timeout: 10000, // Set a reasonable timeout value
 });
 

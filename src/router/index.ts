@@ -8,22 +8,22 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/test/',
+      path: '/aiDesigner/test/',
       name: 'TestView',
       component: TestView,
     },
     {
-      path: '/:userId/',
+      path: '/aiDesigner/:userId/',
       name: 'NotebookManagement',
       component: NotebookManagementView,
     },
     {
-      path: '/:userId/:nodeId/create',
+      path: '/aiDesigner/:userId/:nodeId/create',
       name: 'NotebookCreation',
       component: NotebookCreationView,
     },
     {
-      path: '/:userId/instance/:instanceName',
+      path: '/aiDesigner/:userId/instance/:instanceName',
       name: 'NotebookInstance',
       component: NotebookInstanceView,
     },

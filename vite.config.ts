@@ -26,25 +26,20 @@ export default defineConfig(({ command, mode }) => {
     c.server = {
       cors: true,
       proxy: {
-        '/k8sApi': {
+        '/aiDesigner/k8sApi': {
           target: 'http://139.9.165.93:30308', // 修改为你的后端接口地址
           changeOrigin: true,
-          rewrite: (path: string) => path.replace(/^\/k8sApi/, ''),
+          rewrite: (path: string) => path.replace(/^\/aiDesigner\/k8sApi/, ''),
         },
-        '/sampleApi': {
+        '/aiDesigner/sampleApi': {
           target: 'http://124.16.188.132:18070', // 修改为你的后端接口地址
           changeOrigin: true,
-          rewrite: (path: string) => path.replace(/^\/sampleApi/, ''),
+          rewrite: (path: string) => path.replace(/^\/aiDesigner\/sampleApi/, ''),
         },
-        '/dataApi': {
+        '/aiDesigner/dataApi': {
           target: 'https://www.cpeos.org.cn',
           changeOrigin: true,
-          rewrite: (path: string) => path.replace(/^\/dataApi/, ''),
-        },
-        '/gitApi': {
-          target: 'https://gitee.com',
-          changeOrigin: true,
-          rewrite: (path: string) => path.replace(/^\/gitApi/, ''),
+          rewrite: (path: string) => path.replace(/^\/aiDesigner\/dataApi/, ''),
         }
       },
     }
