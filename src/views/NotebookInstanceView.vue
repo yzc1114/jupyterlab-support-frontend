@@ -23,7 +23,7 @@
     <!-- <div class="iframe-body-sty" v-if="instanceServiceUrl !== ''"> -->
     <div class="iframe-body-sty">
       <!-- <iframe :class="iframeCSS.jupyterlab" :src="instanceServiceUrl"></iframe> -->
-      <iframe :class="iframeCSS.jupyterlab" src="https://www.cpeos.org.cn/lab"></iframe>
+      <iframe :class="iframeCSS.jupyterlab" src="http://test.com:8081/aiDesigner/lab/"></iframe>
       <div :class="iframeCSS.sideTab" v-if="showSideTab !== null" style="padding-top: 10px;">
         <div class="sideTabContainer" v-show="showSideTab == 'SampleSearch'">
           <SampleSearch :userId="Array.isArray($route.params.userId) ? $route.params.userId[0] : $route.params.userId">

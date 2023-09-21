@@ -44,6 +44,8 @@ export default defineConfig(({ command, mode }) => {
           rewrite: (path: string) => path.replace(/^\/aiDesigner\/dataApi/, ''),
         }
       },
+      host: '0.0.0.0',
+      port: 5173
     }
   }
   return c

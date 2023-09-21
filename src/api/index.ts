@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const k8sClient = axios.create({
-    baseURL: '/aiDesigner/k8sApi',
+    baseURL: `${import.meta.env.VITE_BASE_URL}/k8sApi`,
     timeout: 10000, // Set a reasonable timeout value
 });
 
