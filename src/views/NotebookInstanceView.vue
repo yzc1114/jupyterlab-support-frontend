@@ -116,7 +116,7 @@ export default defineComponent({
       console.log("service url", this.instanceServiceUrl)
     },
     returnManagement() {
-      this.$router.push(`/aiDesigner/${this.$route.params.userId}/`);
+      this.$router.push(`/${this.$route.params.userId}/`);
     },
     sideTabActivate(sideTab: 'SampleSearch'|'DataSearch'|'CodeSnippet'|'CodeRepo') {
       this.showSideTab = sideTab

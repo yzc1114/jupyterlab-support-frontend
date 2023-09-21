@@ -21,12 +21,12 @@ export default defineComponent({
     createInstance() {
       console.log("createInstance clicked, userId: ", this.userId)
       // 处理创建实例的逻辑，可以使用 Vue Router 跳转到创建实例页面
-      this.$router.push(`/aiDesigner/${this.userId}/${this.node.name}/create`);
+      this.$router.push(`/${this.userId}/${this.node.name}/create`);
     },
     enterInstance(instance: Instance) {
       // 处理进入实例的逻辑，可以使用 Vue Router 跳转到实例使用页面
       console.log("enterInstance clicked, userId: ", this.userId, "instance: ", instance.name)
-      this.$router.push(`/aiDesigner/${this.userId}/instance/${instance.name}`);
+      this.$router.push(`/${this.userId}/instance/${instance.name}`);
     },
     destroyInstance(instance: Instance) {
       // 处理摧毁实例的逻辑

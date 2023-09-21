@@ -9,12 +9,13 @@ export default defineConfig(({ command, mode }) => {
   // Load env file based on `mode` in the current working directory.
   // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
   const env = loadEnv(mode, process.cwd(), '')
+  const BASE_URL = env.VITE_BASE_URL
   let c: any = {
     plugins: [
       vue(),
       vueJsx(),
     ],
-    base: '/aiDesigner/',
+    base: BASE_URL,
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url))
