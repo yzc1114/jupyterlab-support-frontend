@@ -99,13 +99,13 @@ export default {
       // 跳转回实例管理页面，使用 Vue Router 的方式
       let succeeded = await this.doCreateInstance()
       if (succeeded) {
-        this.$router.push(`/${this.$route.params.userId}/`);
+        this.$router.push(`/instances/${this.$route.params.userId}/`);
       }
     },
     cancel() {
       // 取消创建实例，直接跳转回实例管理页面
       // this.$router.push('/');
-      this.$router.push(`/${this.$route.params.userId}/`);
+      this.$router.push(`/instances/${this.$route.params.userId}/`);
     },
     async loadNode() {
       // 加载节点信息
@@ -135,6 +135,8 @@ export default {
       let image = this.form.image
       let nodeName = this.$route.params.nodeId
       let userId = this.$route.params.userId
+      let labBaseUrl = `${import.meta.env.VITE_BASE_URL}/lab/${userId}/${instanceName}`
+      console.log("createInstance", instanceName, cpu, mem, image, nodeName, userId, labBaseUrl)
       let podYaml = {
         "apiVersion": "v1",
         "kind": "Pod",
@@ -165,7 +167,7 @@ export default {
               "command": [
                 "/bin/bash",
                 "-c",
-                "jupyter lab --generate-config &&\ncat > ~/.jupyter/jupyter_lab_config.py << EOF\nc.ServerApp.tornado_settings = {\n'headers': {\n'Content-Security-Policy': \"frame-ancestors 'self' *;\",\n}\n}\nc.ServerApp.token = ''\nc.ServerApp.base_url = '/aiDesigner/yhhuser/lab/'\nc.ServerApp.password = ''\nc.ServerApp.disable_check_xsrf = True\nEOF\nstart.sh jupyter lab --ip='0.0.0.0' --ServerApp.allow_root=True --port 8888 --no-browser"
+                `jupyter lab --generate-config &&\ncat > ~/.jupyter/jupyter_lab_config.py << EOF\nc.ServerApp.tornado_settings = {\n'headers': {\n'Content-Security-Policy': \"frame-ancestors 'self' *;\",\n}\n}\nc.ServerApp.token = ''\nc.ServerApp.base_url = '${labBaseUrl}'\nc.ServerApp.password = ''\nc.ServerApp.disable_check_xsrf = True\nEOF\nstart.sh jupyter lab --ip='0.0.0.0' --ServerApp.allow_root=True --port 8888 --no-browser`
               ],
               "resources": {
                 "requests": {
@@ -214,6 +216,47 @@ export default {
       let createServiceResponse = await createResource(serviceYaml)
       if (createServiceResponse.code != 20000) {
         ElMessage.error(`创建实例服务失败，原因：${createServiceResponse.message}`);
+        return false
+      }
+
+      let ingressYaml = {
+        "apiVersion": "networking.k8s.io/v1",
+        "kind": "Ingress",
+        "metadata": {
+          "name": `${instanceName}-ingress`,
+          "namespace": "jupyterlab-management",
+          "labels": {
+            "app": "jupyterlab-instance",
+            "name": `${instanceName}-ingress`
+          }
+        },
+        "spec": {
+          "ingressClassName": "nginx",
+          "rules": [
+            {
+              "http": {
+                "paths": [
+                  {
+                    "path": `${labBaseUrl}`,
+                    "pathType": "Prefix",
+                    "backend": {
+                      "service": {
+                        "name": `${instanceName}-svc`,
+                        "port": {
+                          "number": 8888
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+      let createIngressResponse = await createResource(ingressYaml)
+      if (createIngressResponse.code != 20000) {
+        ElMessage.error(`创建实例Ingress失败，原因：${createIngressResponse.message}`);
         return false
       }
 

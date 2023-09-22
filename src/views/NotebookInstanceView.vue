@@ -22,8 +22,8 @@
     <!-- iframe位于按钮下方，使用Flex布局左对齐 -->
     <!-- <div class="iframe-body-sty" v-if="instanceServiceUrl !== ''"> -->
     <div class="iframe-body-sty">
-      <!-- <iframe :class="iframeCSS.jupyterlab" :src="instanceServiceUrl"></iframe> -->
-      <iframe :class="iframeCSS.jupyterlab" src="http://test.com:8081/aiDesigner/lab/"></iframe>
+      <iframe :class="iframeCSS.jupyterlab" :src="instanceServiceUrl"></iframe>
+      <!-- <iframe :class="iframeCSS.jupyterlab" src="http://test.com:8081/aiDesigner/lab/"></iframe> -->
       <div :class="iframeCSS.sideTab" v-if="showSideTab !== null" style="padding-top: 10px;">
         <div class="sideTabContainer" v-show="showSideTab == 'SampleSearch'">
           <SampleSearch :userId="Array.isArray($route.params.userId) ? $route.params.userId[0] : $route.params.userId">
@@ -54,6 +54,7 @@ import CodeSnippet from '@/components/CodeSnippet.vue'
 import CodeRepo from '@/components/CodeRepo.vue'
 import { getService } from '@/api/cluster'
 import { ElMessage } from 'element-plus'; // 引入 Element Plus 组件库中的 Message 组件
+import { getLabBaseUrl } from '@/utils/lab';
 
 export default defineComponent({
   name: 'NotebookManagement',
@@ -65,6 +66,8 @@ export default defineComponent({
   },
   data() {
     return {
+      userId: "",
+      instanceName: "",
       instanceServiceUrl: "",
       // activeTab: '', // Active tab (userSample or platformSample)
       // userSampleSearchParams: {
@@ -91,6 +94,19 @@ export default defineComponent({
     };
   },
   async mounted() {
+    let userId: string | string[] = this.$route.params.userId
+    if (Array.isArray(userId)) {
+      userId = userId[0]
+    }
+    this.userId = userId
+    let instanceName: string | string[] = this.$route.params.instanceName
+      // assert instanceName is a single string
+    if (Array.isArray(instanceName)) {
+      instanceName = instanceName[0]
+    }
+    this.instanceName = instanceName
+    console.log("userId", this.userId, "instanceName", instanceName)
+
     await this.loadService()
   },
   methods: {
@@ -98,25 +114,32 @@ export default defineComponent({
       console.log("showingTabButton", this.showSideTab, tabName, this.showSideTab == tabName)
       return this.showSideTab == tabName ? 'primary' : 'normal'
     },
+    // async loadService() {
+    //   let instanceName: string | string[] = this.$route.params.instanceName
+    //   // assert instanceName is a single string
+    //   if (Array.isArray(instanceName)) {
+    //     instanceName = instanceName[0]
+    //   }
+    //   console.log("loadService, instanceName: ", instanceName)
+    //   let serviceResponse = await getService(`${instanceName}-svc`, import.meta.env.VITE_NAMESPACE, {})
+    //   if (serviceResponse.code !== 20000) {
+    //     ElMessage.error(serviceResponse.message);
+    //     return
+    //   }
+    //   console.log("service", serviceResponse)
+    //   let service = serviceResponse.data
+    //   this.instanceServiceUrl = `http://${import.meta.env.VITE_K8S_IP}:${service.spec.ports[0].nodePort}`
+    //   console.log("service url", this.instanceServiceUrl)
+    // },
+
     async loadService() {
-      let instanceName: string | string[] = this.$route.params.instanceName
-      // assert instanceName is a single string
-      if (Array.isArray(instanceName)) {
-        instanceName = instanceName[0]
-      }
-      console.log("loadService, instanceName: ", instanceName)
-      let serviceResponse = await getService(`${instanceName}-svc`, import.meta.env.VITE_NAMESPACE, {})
-      if (serviceResponse.code !== 20000) {
-        ElMessage.error(serviceResponse.message);
-        return
-      }
-      console.log("service", serviceResponse)
-      let service = serviceResponse.data
-      this.instanceServiceUrl = `http://${import.meta.env.VITE_K8S_IP}:${service.spec.ports[0].nodePort}`
-      console.log("service url", this.instanceServiceUrl)
+      console.log("loadService, instanceName: ", this.instanceName)
+      let url = getLabBaseUrl(import.meta.env.VITE_BASE_URL, this.userId, this.instanceName)
+      this.instanceServiceUrl = url
+      console.log("loadService, instanceServiceUrl: ", this.instanceServiceUrl)
     },
     returnManagement() {
-      this.$router.push(`/${this.$route.params.userId}/`);
+      this.$router.push(`/instances/${this.$route.params.userId}/`);
     },
     sideTabActivate(sideTab: 'SampleSearch'|'DataSearch'|'CodeSnippet'|'CodeRepo') {
       this.showSideTab = sideTab

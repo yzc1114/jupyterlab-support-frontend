@@ -42,6 +42,10 @@ export default defineConfig(({ command, mode }) => {
           target: 'https://www.cpeos.org.cn',
           changeOrigin: true,
           rewrite: (path: string) => path.replace(/^\/aiDesigner\/dataApi/, ''),
+        },
+        '/aiDesigner/lab': {
+          target: 'http://139.9.165.93:32292',
+          changeOrigin: true,
         }
       },
       host: '0.0.0.0',

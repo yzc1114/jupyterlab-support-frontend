@@ -89,8 +89,10 @@ export default defineComponent({
     async handleInstanceDelete(instanceName: string) {
       let namespace = import.meta.env.VITE_NAMESPACE
       let svcName = `${instanceName}-svc`
+      let ingressName = `${instanceName}-ingress`
       let deletePodResponse = await deleteResource("Pod", instanceName, namespace)
       let deleteSvcResponse = await deleteResource("Service", svcName, namespace)
+      let deleteIngressResponse = await deleteResource("Ingress", ingressName, namespace)
       for (let node of this.nodes) {
         for (let instance of node.instances) {
           if (instance.name == instanceName) {
@@ -105,6 +107,10 @@ export default defineComponent({
       }
       if (deleteSvcResponse.code != 20000) {
         ElMessage.error(`删除实例服务失败，原因：${deleteSvcResponse.message}`);
+        return
+      }
+      if (deleteIngressResponse.code != 20000) {
+        ElMessage.error(`删除实例Ingress失败，原因：${deleteSvcResponse.message}`);
         return
       }
       await this.refresh()

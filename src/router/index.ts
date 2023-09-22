@@ -13,17 +13,17 @@ const router = createRouter({
       component: TestView,
     },
     {
-      path: '/:userId/',
+      path: '/instances/:userId/',
       name: 'NotebookManagement',
       component: NotebookManagementView,
     },
     {
-      path: '/:userId/:nodeId/create',
+      path: '/create/:userId/:nodeId/',
       name: 'NotebookCreation',
       component: NotebookCreationView,
     },
     {
-      path: '/:userId/instance/:instanceName',
+      path: '/instance/:userId/:instanceName',
       name: 'NotebookInstance',
       component: NotebookInstanceView,
     },
