@@ -114,24 +114,6 @@ export default defineComponent({
       console.log("showingTabButton", this.showSideTab, tabName, this.showSideTab == tabName)
       return this.showSideTab == tabName ? 'primary' : 'normal'
     },
-    // async loadService() {
-    //   let instanceName: string | string[] = this.$route.params.instanceName
-    //   // assert instanceName is a single string
-    //   if (Array.isArray(instanceName)) {
-    //     instanceName = instanceName[0]
-    //   }
-    //   console.log("loadService, instanceName: ", instanceName)
-    //   let serviceResponse = await getService(`${instanceName}-svc`, import.meta.env.VITE_NAMESPACE, {})
-    //   if (serviceResponse.code !== 20000) {
-    //     ElMessage.error(serviceResponse.message);
-    //     return
-    //   }
-    //   console.log("service", serviceResponse)
-    //   let service = serviceResponse.data
-    //   this.instanceServiceUrl = `http://${import.meta.env.VITE_K8S_IP}:${service.spec.ports[0].nodePort}`
-    //   console.log("service url", this.instanceServiceUrl)
-    // },
-
     async loadService() {
       console.log("loadService, instanceName: ", this.instanceName)
       let url = getLabBaseUrl(import.meta.env.VITE_BASE_URL, this.userId, this.instanceName)

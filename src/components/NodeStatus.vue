@@ -162,9 +162,15 @@ p {
   margin: 5px 0;
 }
 
+:deep(.cell) {
+    overflow: visible;
+}
+
 /* ::v-deep {
   .el-form-item
   width: 90%;
 } */
+
+
 
 </style>
