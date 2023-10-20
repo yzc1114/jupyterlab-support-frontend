@@ -2,7 +2,7 @@
 
 docker_user=yzc1114
 image_name=jupyterlab-management-frontend
-image_tag=v1
+image_tag=v2
 
 
 image=${docker_user}/${image_name}:${image_tag}

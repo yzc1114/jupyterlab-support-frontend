@@ -107,13 +107,13 @@ import SampleTable from '@/components/SampleTable.vue'
 var defaultUserSampleSearchParams = {
     pageSize: 10,
     pageNum: 1,
-    sampleSetName: '测试用户上传样本集',
-    type: 1,
-    source: 1,
-    bands: 1,
-    format: "tif",
-    size: "1000*1000",
-    userId: '',
+    sampleSetName: null,
+    type: null,
+    source: null,
+    bands: null,
+    format: null,
+    size: null,
+    userId: "",
 } as UserSampleSetQueryParams
 
 var defaultUserSampleSearchModel = {
@@ -209,6 +209,7 @@ export default defineComponent({
             userSampleSearchParams.format = userSampleSearchModel.format === "0" ? null : userSampleSearchModel.format
             userSampleSearchParams.source = userSampleSearchModel.source === "0" ? null : Number(userSampleSearchModel.source)
             userSampleSearchParams.type = userSampleSearchModel.type === "0" ? null : Number(userSampleSearchModel.type)
+            userSampleSearchParams.userId = this.userId;
             console.log("searchUserSample request", userSampleSearchParams)
             const response = await getUserSampleList(userSampleSearchParams)
             console.log("searchUserSample response", response)

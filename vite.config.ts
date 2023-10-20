@@ -34,7 +34,7 @@ export default defineConfig(({ command, mode }) => {
           rewrite: (path: string) => path.replace(/^\/aiDesigner\/k8sApi/, ''),
         },
         '/aiDesigner/sampleApi': {
-          target: 'http://124.16.188.132:18070', // 修改为你的后端接口地址
+          target: 'https://www.cpeos.org.cn', // 修改为你的后端接口地址
           changeOrigin: true,
           rewrite: (path: string) => path.replace(/^\/aiDesigner\/sampleApi/, ''),
         },
