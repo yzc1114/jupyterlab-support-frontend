@@ -10,6 +10,7 @@ export default defineConfig(({ command, mode }) => {
   // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
   const env = loadEnv(mode, process.cwd(), '')
   const BASE_URL = env.VITE_BASE_URL
+  const K8S_IP = env.VITE_K8S_IP
   let c: any = {
     plugins: [
       vue(),
@@ -29,7 +30,7 @@ export default defineConfig(({ command, mode }) => {
       cors: true,
       proxy: {
         '/aiDesigner/k8sApi': {
-          target: 'http://139.9.165.93:30308', // 修改为你的后端接口地址
+          target: `http://${K8S_IP}:30308`, // 修改为你的后端接口地址
           changeOrigin: true,
           rewrite: (path: string) => path.replace(/^\/aiDesigner\/k8sApi/, ''),
         },
@@ -43,10 +44,10 @@ export default defineConfig(({ command, mode }) => {
           changeOrigin: true,
           rewrite: (path: string) => path.replace(/^\/aiDesigner\/dataApi/, ''),
         },
-        '/aiDesigner/lab': {
-          target: 'http://139.9.165.93:32292',
-          changeOrigin: true,
-        }
+        // '/aiDesigner/lab': {
+        //   target: `http://${K8S_IP}:30308`,
+        //   changeOrigin: true,
+        // }
       },
       host: '0.0.0.0',
       port: 5173
