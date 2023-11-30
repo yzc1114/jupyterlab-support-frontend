@@ -13,14 +13,9 @@
                                 <span v-if="data.isLeaf === true">
                                     <el-button class="copy-button" type="text" @click="handleFileShow(data)">
                                         {{ '显示' }}
-                                        <loading v-model:active="data.contentLoading"
-                                        class="loading"
-                                        :height="30"
-                                        :width="30"
-                                        color="#007bff"
-                                        background-color="white"
-                                        loader="bars"
-                                        :is-full-page="false"/>
+                                        <loading v-model:active="data.contentLoading" class="loading" :height="30"
+                                            :width="30" color="#007bff" background-color="white" loader="bars"
+                                            :is-full-page="false" />
                                     </el-button>
                                 </span>
                                 <span v-if="data.root === true">
@@ -54,6 +49,8 @@
     </div>
 </template>
 
+
+
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { ElMessage } from 'element-plus'; // 引入 Element Plus 组件库中的 Message 组件
@@ -66,7 +63,7 @@ import { python } from '@codemirror/lang-python'
 import { oneDark } from '@codemirror/theme-one-dark'
 import { EditorState } from "@codemirror/state"
 import { listAllCodeSnippets } from '@/api/cluster'
-import { getUserRepos, getFileContent, getRepoContents, type TreeNode, type GetUserReposParams, type GetRepoContentsParams, type GetFileContentParams } from '@/api/git'
+import { getUserRepos, getFileContent, getRepoContents, type BaseGitResponse, type TreeNode, type GetUserReposParams, type GetRepoContentsParams, type GetFileContentParams } from '@/api/git'
 import type Node from 'element-plus/es/components/tree/src/model/node'
 
 
@@ -131,18 +128,21 @@ export default defineComponent({
             codeTabs: {
                 'platform': {
                     label: '模型代码',
-                    gitOwnerId: 'test',
+                    gitOwnerId: 'root',
+                    token: undefined, // glpat-RZnzx43BUo4x8T5cpyyG
                     dataSource: null as TreeNode[] | null,
                 },
                 'user': {
                     label: '用户代码',
-                    gitOwnerId: this.userId,
+                    gitOwnerId: "test1",
+                    token: 'glpat-RZnzx43BUo4x8T5cpyyG', // glpat-tFDz_cwgwv_oHLCmvLLj
                     dataSource: null as TreeNode[] | null,
                 },
             } as {
                 [key: string]: {
                     label: string,
-                    gitOwnerId: string
+                    gitOwnerId: string,
+                    token: string | undefined,
                     dataSource: TreeNode[],
                 }
             }
@@ -155,7 +155,7 @@ export default defineComponent({
         //     this.codeTabs[this.activeTab].dataSource = repos
         // }
         // }, 5000)
-        let repos = await this.loadRepos(this.codeTabs[this.activeTab].gitOwnerId)
+        let repos = await this.loadRepos(this.codeTabs[this.activeTab].gitOwnerId, this.codeTabs[this.activeTab].token)
         if (repos) {
             this.codeTabs[this.activeTab].dataSource = repos
         }
@@ -182,7 +182,8 @@ export default defineComponent({
             if (this.codeTabs[tabName].dataSource != null && this.codeTabs[tabName].dataSource.length > 0) {
                 return
             }
-            let repos = await this.loadRepos(this.codeTabs[this.activeTab].gitOwnerId)
+            let repos = await this.loadRepos(this.codeTabs[this.activeTab].gitOwnerId,
+            this.codeTabs[this.activeTab].token)
             if (repos) {
                 this.codeTabs[tabName].dataSource = repos
             }
@@ -190,13 +191,13 @@ export default defineComponent({
         async handleLoadNode(node: Node, resolve: Function) {
             console.log(node, "load node")
             if (!node.data) {
-                resolve(null)
+                // resolve(null)
                 console.log("no data")
                 return
             }
             let data: TreeNode = node.data as TreeNode
             if (data.isLeaf === true) {
-                resolve(null)
+                // resolve(null)
                 console.log("isLeaf, no need to load")
                 return
             }
@@ -206,7 +207,13 @@ export default defineComponent({
                 return
             }
             let dirPath = data.fullPath
-            let loadedRepoContents = await this.loadRepoContents(this.codeTabs[this.activeTab].gitOwnerId, data.repoName, dirPath)
+            let loadedRepoContents = await this.loadRepoContents(
+                this.codeTabs[this.activeTab].gitOwnerId,
+                this.codeTabs[this.activeTab].token,
+                data.repoName,
+                data.repoId,
+                data.ref,
+                dirPath)
             if (!loadedRepoContents) {
                 resolve(null)
                 console.log("load repo contents failed")
@@ -226,16 +233,19 @@ export default defineComponent({
                 showCodeDialog(data.name, data.content);
                 return
             }
-            
+
             data.contentLoading = true;
             setTimeout(async () => {
-                let content = await this.loadFileContent(this.codeTabs[this.activeTab].gitOwnerId, data.repoName, data.fullPath);
-            data.contentLoading = false;
-            if (!content) {
-                return;
-            }
-            data.content = content;
-            showCodeDialog(data.name, data.content);
+                let content = await this.loadFileContent(
+                    this.codeTabs[this.activeTab].gitOwnerId,
+                    this.codeTabs[this.activeTab].token,
+                    data.repoId, data.repoName, data.fullPath);
+                data.contentLoading = false;
+                if (!content) {
+                    return;
+                }
+                data.content = content;
+                showCodeDialog(data.name, data.content);
             }, 5000);
         },
         async handleGotoRepo(data: TreeNode) {
@@ -248,9 +258,10 @@ export default defineComponent({
             copyToClipboard(cmd)
             ElMessage.success('代码仓库clone命令已复制到剪贴板！');
         },
-        async loadRepos(gitOwnerId: string) {
+        async loadRepos(gitOwnerId: string, token: string|undefined) {
             let getUserReposParams: GetUserReposParams = {
-                repoOwnerId: gitOwnerId
+                repoOwnerId: gitOwnerId,
+                token: token,
             }
             console.log("get code repos request", getUserReposParams)
             let response = await getUserRepos(getUserReposParams)
@@ -261,10 +272,13 @@ export default defineComponent({
             }
             return response.data.repos
         },
-        async loadRepoContents(gitOwnerId: string, repoName: string, dirPath: string) {
+        async loadRepoContents(gitOwnerId: string, token: string | undefined, repoName: string, repoId: number, ref: string, dirPath: string) {
             let params: GetRepoContentsParams = {
                 repoOwnerId: gitOwnerId,
+                token: token,
+                repoId: repoId,
                 repoName: repoName,
+                ref: ref,
                 dirPath: dirPath,
             }
             console.log("get code repo contents request", params)
@@ -276,10 +290,12 @@ export default defineComponent({
             }
             return response.data.children
         },
-        async loadFileContent(gitOwnerId: string, repoName: string, fileFullPath: string) {
+        async loadFileContent(gitOwnerId: string, token: string | undefined, repoId: number, ref: string, fileFullPath: string) {
             let getFileContentParams: GetFileContentParams = {
                 repoOwnerId: gitOwnerId,
-                repoName: repoName,
+                token: token,
+                repoId: repoId,
+                ref: ref,
                 filePath: fileFullPath,
             }
             console.log("get code file content request", getFileContentParams)
@@ -394,8 +410,8 @@ export default defineComponent({
     margin-right: 10px;
 }
 
-:deep(.el-tabs__item){
-    font-size:calc(100vw * 15 / 1920);
+:deep(.el-tabs__item) {
+    font-size: calc(100vw * 15 / 1920);
 }
 
 
@@ -405,5 +421,4 @@ export default defineComponent({
     color: RGB(0, 123, 255);
     background-color: white;
 } */
-
 </style>

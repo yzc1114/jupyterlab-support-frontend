@@ -1,6 +1,6 @@
 const { Octokit } = require("@octokit/rest");
 const octokit = new Octokit({
-    baseUrl: 'https://api.github.com',
+    baseUrl: 'http://133.133.135.73:8880/api/v4',
 })
 const fs = require('fs'); 
 
