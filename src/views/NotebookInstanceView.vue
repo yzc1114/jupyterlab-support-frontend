@@ -115,24 +115,26 @@ export default defineComponent({
       return this.showSideTab == tabName ? 'primary' : 'normal'
     },
     async loadService() {
-      console.log("loadService, instanceName: ", this.instanceName)
-      let svcName = `${this.instanceName}-svc`
-      let svcLabels = { "app": "jupyterlab-instance", "name": svcName }
-      let response = await getService(svcName, import.meta.env.VITE_NAMESPACE, svcLabels)
-      console.log("loadService, response: ", response)
-      if (response == null) {
-        ElMessage.error("获取服务失败！")
-        return
-      }
-      if (response.code != 20000) {
-        ElMessage.error('获取服务失败！原因：' + response.message);
-        return
-      }
+      // console.log("loadService, instanceName: ", this.instanceName)
+      // let svcName = `${this.instanceName}-svc`
+      // let svcLabels = { "app": "jupyterlab-instance", "name": svcName }
+      // let response = await getService(svcName, import.meta.env.VITE_NAMESPACE, svcLabels)
+      // console.log("loadService, response: ", response)
+      // if (response == null) {
+      //   ElMessage.error("获取服务失败！")
+      //   return
+      // }
+      // if (response.code != 20000) {
+      //   ElMessage.error('获取服务失败！原因：' + response.message);
+      //   return
+      // }
+      // let path = getLabBaseUrl(import.meta.env.VITE_BASE_URL, this.userId, this.instanceName)
+      // let nodePort = response.data.spec.ports[0].nodePort
+      // let url = `http://${import.meta.env.VITE_K8S_IP}:${nodePort}${path}`
+      // this.instanceServiceUrl = url
+      // console.log("loadService, instanceServiceUrl: ", this.instanceServiceUrl)
       let path = getLabBaseUrl(import.meta.env.VITE_BASE_URL, this.userId, this.instanceName)
-      let nodePort = response.data.spec.ports[0].nodePort
-      let url = `http://${import.meta.env.VITE_K8S_IP}:${nodePort}${path}`
-      this.instanceServiceUrl = url
-      console.log("loadService, instanceServiceUrl: ", this.instanceServiceUrl)
+      this.instanceServiceUrl = path
     },
     returnManagement() {
       this.$router.push(`/instances/${this.$route.params.userId}/`);

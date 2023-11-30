@@ -44,10 +44,10 @@ export default defineConfig(({ command, mode }) => {
           changeOrigin: true,
           rewrite: (path: string) => path.replace(/^\/aiDesigner\/dataApi/, ''),
         },
-        // '/aiDesigner/lab': {
-        //   target: `http://${K8S_IP}:30308`,
-        //   changeOrigin: true,
-        // }
+        '/aiDesigner/lab': {
+          target: `http://${K8S_IP}:32628`,
+          changeOrigin: true,
+        }
       },
       host: '0.0.0.0',
       port: 5173

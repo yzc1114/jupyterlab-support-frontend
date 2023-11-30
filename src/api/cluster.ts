@@ -1,7 +1,7 @@
 import { k8sClient } from './index'
 
 
-const region = "test"
+const region = "local"
 const maxLimit = 100
 const mock = false
 

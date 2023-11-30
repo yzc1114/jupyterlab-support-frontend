@@ -75,7 +75,7 @@ export default defineComponent({
       for (let node of nodes) {
         let nodeInfo: Node = parseNode(node)
         for (let pod of pods) {
-          if (pod.node != node.name) {
+          if (pod.spec.nodeName != node.metadata.name) {
             continue
           }
           let instance: Instance = parseInstance(pod)
