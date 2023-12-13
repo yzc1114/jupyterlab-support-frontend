@@ -6,7 +6,7 @@
         <p>节点名称：{{ node.name }}</p>
         <p>CPU: {{ node.cpuTotal }}</p>
         <p>内存: {{ node.memoryTotal.toFixed(2) }} GB</p>
-        <p>GPU: {{ node.gpuUsed/node.gpuTotal }}</p>
+        <p>GPU: {{ `${node.gpuUsed}/${node.gpuTotal}` }}</p>
       </div>
     </div>
     <div v-else>
@@ -137,7 +137,7 @@ export default {
       let userId = this.$route.params.userId
       let labBaseUrl = `${import.meta.env.VITE_BASE_URL}/lab/${userId}/${instanceName}`
       console.log("createInstance", instanceName, cpu, mem, image, nodeName, userId, labBaseUrl)
-      let podYaml = {
+      let podYaml: any = {
         "apiVersion": "v1",
         "kind": "Pod",
         "metadata": {
@@ -182,18 +182,11 @@ export default {
         }
       }
       if (this.node.gpuTotal > 0) {
-        podYaml.spec.containers[0].resources.requests = {
-          memory: `${mem}Mi`,
-          cpu: `${cpu}m`,
-          'nvidia.com/gpu': gpu
-        } as {
-          memory: string;
-          cpu: string;
-          'nvidia.com/gpu': number;
-        };
+        podYaml.spec.containers[0].resources.requests["nvidia.com/gpu"] = `${gpu}`
       }
       console.log("createResource podYaml", podYaml)
       let createPodResponse = await createResource(podYaml)
+      console.log("createResource createPodResponse", createPodResponse)
       if (createPodResponse.code != 20000) {
         ElMessage.error(`创建实例失败，原因：${createPodResponse.message}`);
         return false
@@ -224,7 +217,9 @@ export default {
           }
         }
       }
+      console.log("createResource serviceYaml", serviceYaml)
       let createServiceResponse = await createResource(serviceYaml)
+      console.log("createResource createServiceResponse", createServiceResponse)
       if (createServiceResponse.code != 20000) {
         ElMessage.error(`创建实例服务失败，原因：${createServiceResponse.message}`);
         return false
@@ -265,7 +260,9 @@ export default {
           ]
         }
       }
+      console.log("createResource ingressYaml", ingressYaml)
       let createIngressResponse = await createResource(ingressYaml)
+      console.log("createResource createIngressResponse", createIngressResponse)
       if (createIngressResponse.code != 20000) {
         ElMessage.error(`创建实例Ingress失败，原因：${createIngressResponse.message}`);
         return false
