@@ -179,6 +179,26 @@ export default {
                   "memory": `${mem}Mi`,
                   "cpu": `${cpu}m`,
                 }
+              },
+              "env": [
+                {
+                  "name": "GRANT_SUDO",
+                  "value": "yes"
+                }
+              ],
+              "volumeMounts": [
+                {
+                  "name": "nfs-data-volume",
+                  "mountPath": "/data"
+                }
+              ]
+            }
+          ],
+          "volumes": [
+            {
+              "name": "nfs-data-volume",
+              "hostPath": {
+                "path": "/data"
               }
             }
           ],
