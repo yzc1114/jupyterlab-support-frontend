@@ -182,7 +182,9 @@ export default {
         }
       }
       if (this.node.gpuTotal > 0) {
-        podYaml.spec.containers[0].resources.requests["nvidia.com/gpu"] = `${gpu}`
+        podYaml.spec.containers[0].resources["limits"] = {
+          "nvidia.com/gpu": `${gpu}`,
+        }
       }
       console.log("createResource podYaml", podYaml)
       let createPodResponse = await createResource(podYaml)
