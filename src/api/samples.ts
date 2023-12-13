@@ -65,7 +65,7 @@ export interface UserSampleSetQueryParams {
     bands: number|null;
     format: string|null;
     size: string|null;
-    userId: string;
+    userId: string|null;
 }
 
 

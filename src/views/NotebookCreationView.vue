@@ -58,7 +58,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import NodeStatus from '@/components/NodeStatus.vue'
-import { listAllNodes, listAllPods, getService, getNode, createResource } from '@/api/cluster'
+import { listAllNodes, listAllPods, getService, getNode, getPod, createResource } from '@/api/cluster'
 import { parseNode } from '@/utils/parser'
 import { type UserSampleSet, type UserSampleApiResponse, type UserSampleSetQueryParams, type PlatformSampleSet, type PlatformSampleApiResponse, type PlatformSampleSetQueryParams, getUserSampleList, getPlatformSampleList } from '@/api/samples'
 import { ElMessage } from 'element-plus'; // 引入 Element Plus 组件库中的 Message 组件
@@ -132,14 +132,57 @@ export default {
       // }, 1000)
       this.nodeLoaded = true
     },
+    async loadPod(instanceName: string) {
+      console.log("loadPod, instanceName: ", instanceName)
+      let labels = { "app": "jupyterlab-instance", "name": instanceName }
+      let response = await getPod(instanceName, import.meta.env.VITE_NAMESPACE, labels)
+      console.log("loadPod, response: ", response)
+      if (response == null) {
+        let e = "调用获取Pod接口失败！"
+        ElMessage.error(e)
+        throw new Error(e)
+      }
+      if (response.code != 20000) {
+        return null
+      }
+      return response.data
+    },
+    async checkDuplicateInstance(instanceName: string): Promise<boolean> {
+      try {
+        let pod = await this.loadPod(instanceName)
+        console.log("checkDuplicateInstance, pod: ", pod)
+        if (pod == null) {
+          return false
+        }
+        return true
+      } catch (e) {
+        console.log("checkDuplicateInstance, error: ", e)
+        return false
+      }
+    },
     async doCreateInstance(): Promise<boolean> {
       let instanceName = this.form.name
+      let userId = this.$route.params.userId
+      if (instanceName == "") {
+        ElMessage.error("请输入实例名称");
+        return false
+      }
+      if (instanceName.length > 20) {
+        ElMessage.error("实例名称长度不能超过20个字符");
+        return false
+      }
+      instanceName = `${instanceName}-${userId}`
+      let duplicated = await this.checkDuplicateInstance(instanceName)
+      console.log("doCreateInstance, checking duplicated: ", duplicated)
+      if (duplicated) {
+        ElMessage.error(`实例名称 ${instanceName} 已存在，请重新输入`);
+        return false
+      }
       let cpu = Number(this.form.cpu.toFixed(1)) * 1000
       let mem = Number(this.form.memory.toFixed(1)) * 1000
       let gpu = Number(this.form.gpu.toFixed(0))
       let image = this.form.image
       let nodeName = this.$route.params.nodeId
-      let userId = this.$route.params.userId
       let labBaseUrl = `${import.meta.env.VITE_BASE_URL}/lab/${userId}/${instanceName}`
       console.log("createInstance", instanceName, cpu, mem, image, nodeName, userId, labBaseUrl)
       let podYaml: any = {

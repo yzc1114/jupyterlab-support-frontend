@@ -3324,6 +3324,10 @@ export const getNode = async (name: string) => {
     return getResource("Node", name, "default", {})
 }
 
+export const getPod = async (name: string, namespace: string, labels: object) => {
+    return getResource("Pod", name, namespace, labels)
+}
+
 export const listResources = async (fullkind: string, page: number, limit: number, namespace: string | null, labels: any) => {
     let queryLabels: any = {}
     if (namespace) {
