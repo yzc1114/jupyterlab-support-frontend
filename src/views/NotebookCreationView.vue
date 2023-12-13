@@ -87,7 +87,12 @@ export default {
         memory: 0,
         gpu: 0,
       },
-      imageOptions: ['jupyter/minimal-notebook:lab-4.0.2'], // 替换为实际的镜像选项
+      imageOptions: [
+        'jupyter/minimal-notebook:lab-4.0.2',
+        'cschranz/gpu-jupyter:v1.5_cuda-11.6_ubuntu-20.04_slim',
+        'cschranz/gpu-jupyter:v1.5_cuda-11.6_ubuntu-20.04_python-only',
+        'cschranz/gpu-jupyter:v1.5_cuda-11.6_ubuntu-20.04'
+      ], // 替换为实际的镜像选项
     };
   },
   async mounted() {
