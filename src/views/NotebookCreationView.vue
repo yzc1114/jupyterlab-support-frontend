@@ -6,7 +6,7 @@
         <p>节点名称：{{ node.name }}</p>
         <p>CPU: {{ node.cpuTotal }}</p>
         <p>内存: {{ node.memoryTotal.toFixed(2) }} GB</p>
-        <p>GPU: {{ node.gpuTotal }}</p>
+        <p>GPU: {{ node.gpuUsed/node.gpuTotal }}</p>
       </div>
     </div>
     <div v-else>
@@ -43,7 +43,7 @@
         </el-row>
 
         <el-form-item label="GPU" prop="gpu">
-          <el-input-number v-model="form.gpu" :step="1" :min="0"></el-input-number>
+          <el-input-number v-model="form.gpu" :step="1" :min="0" :max="node.gpuTotal - node.gpuUsed"></el-input-number>
         </el-form-item>
       </el-form>
     </form>
@@ -71,12 +71,12 @@ export default {
       node: {
         name: '',
         available: false,
-        cpuUsed: 50,
-        cpuTotal: 100,
-        memoryUsed: 512,
-        memoryTotal: 1024,
-        gpuUsed: 2,
-        gpuTotal: 4,
+        cpuUsed: 0,
+        cpuTotal: 0,
+        memoryUsed: 0,
+        memoryTotal: 0,
+        gpuUsed: 0,
+        gpuTotal: 0,
         instances: [] as Instance[],
       },
       nodeLoaded: false,
@@ -122,16 +122,16 @@ export default {
       let node = nodeResponse.data
       let nodeInfo: Node = parseNode(node)
       this.node = nodeInfo
-      setTimeout(() => {
-        this.nodeLoaded = true
-      }, 1000)
-      // this.nodeLoaded = true
+      // setTimeout(() => {
+      //   this.nodeLoaded = true
+      // }, 1000)
+      this.nodeLoaded = true
     },
     async doCreateInstance(): Promise<boolean> {
       let instanceName = this.form.name
       let cpu = Number(this.form.cpu.toFixed(1)) * 1000
       let mem = Number(this.form.memory.toFixed(1)) * 1000
-      // let gpu = Number(this.form.gpu.toFixed(0))
+      let gpu = Number(this.form.gpu.toFixed(0))
       let image = this.form.image
       let nodeName = this.$route.params.nodeId
       let userId = this.$route.params.userId
@@ -172,7 +172,7 @@ export default {
               "resources": {
                 "requests": {
                   "memory": `${mem}Mi`,
-                  "cpu": `${cpu}m`
+                  "cpu": `${cpu}m`,
                 }
               }
             }
@@ -180,6 +180,17 @@ export default {
           "nodeName": nodeName,
           "restartPolicy": "Always"
         }
+      }
+      if (this.node.gpuTotal > 0) {
+        podYaml.spec.containers[0].resources.requests = {
+          memory: `${mem}Mi`,
+          cpu: `${cpu}m`,
+          'nvidia.com/gpu': gpu
+        } as {
+          memory: string;
+          cpu: string;
+          'nvidia.com/gpu': number;
+        };
       }
       console.log("createResource podYaml", podYaml)
       let createPodResponse = await createResource(podYaml)

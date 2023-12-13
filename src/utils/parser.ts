@@ -16,6 +16,14 @@ export function parseNode(node: any): Node{
         nodeAvaliable = cond.status == "True"
       }
     }
+    let gpu_key = "nvidia.com/gpu";
+    let gpu_used = 0;
+    let gpu_total = 0;
+    if (gpu_key in node.status.allocatable) {
+      gpu_total = node.status.capacity[gpu_key];
+      gpu_used = gpu_total - node.status.allocatable[gpu_key];
+      console.log("find gpus in node", node.metadata.name, gpu_used, gpu_total)
+    }
     let nodeInfo: Node = {
       name: node.metadata.name,
       available: nodeAvaliable,
@@ -23,8 +31,8 @@ export function parseNode(node: any): Node{
       cpuTotal: node.status.allocatable.cpu,
       memoryUsed: 0,
       memoryTotal: convertToGB(node.status.allocatable.memory),
-      gpuUsed: 0,
-      gpuTotal: 0,
+      gpuUsed: gpu_used,
+      gpuTotal: gpu_total,
       instances: [],
     }
     return nodeInfo

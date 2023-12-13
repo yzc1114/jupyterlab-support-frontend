@@ -83,6 +83,7 @@ export default defineComponent({
         }
         resultNodes.push(nodeInfo)
       }
+      resultNodes.sort(function(a, b) { return a.name.localeCompare(b.name); })
       console.log("resultNodes", resultNodes)
       this.nodes = resultNodes
     },
