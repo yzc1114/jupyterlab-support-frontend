@@ -319,16 +319,16 @@ export interface GetUserResponse extends BaseGitResponse {
     };
 }
 
-export const getUser = async (params: GetUserParams): Promise<GetUserReponse> => {
+export const getUser = async (params: GetUserParams): Promise<GetUserResponse> => {
     let response: any = null;
     let api = rootBeakerApi
     if (!api) {
-        return tokenNotExistResponse as GetUserReposResponse;
+        return tokenNotExistResponse as GetUserResponse;
     }
     try {
         response = await api.Users.all({ username: params.gitlabUserName, perPage: 1 })
     } catch (e) {
-        return apiErrorResponse(e) as GetUserReposResponse;
+        return apiErrorResponse(e) as GetUserResponse;
     }
     console.log("getUser response", response)
     let result: GetUserResponse = {

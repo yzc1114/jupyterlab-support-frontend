@@ -203,6 +203,9 @@ export default defineComponent({
                 if (tabName == "platform") {
                     return await _this.loadAIGroupRepos()
                 } else if (tabName == "user") {
+                    if (_this.userInputGitlabName == "") {
+                        return null
+                    }
                     let response = await getUser({ gitlabUserName: _this.userInputGitlabName })
                     if (response.code != 200) {
                         ElMessage.error('加载用户信息失败！');
