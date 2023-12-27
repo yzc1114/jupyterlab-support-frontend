@@ -3,14 +3,15 @@
 // const { Gitlab } = require('@gitbeaker/rest');
 import { Gitlab } from 'https://esm.sh/@gitbeaker/rest';
 import { Buffer } from 'buffer';
-const gitUrl = import.meta.env.VITE_GIT_API_BASE_URL
+const gitUrl = import.meta.env.VITE_GIT_BASE_URL
 
 const rootBeakerApi = new Gitlab({
     host: gitUrl,
-    token: "glpat-RZnzx43BUo4x8T5cpyyG",
+    // token: "glpat-RZnzx43BUo4x8T5cpyyG",
+    token: "glpat-gz_pqU8ns8ZQ1M6aCE8N"
 });
 
-const mock = true;
+const mock = false;
 
 export interface TreeNode {
     name: string;
@@ -26,8 +27,6 @@ export interface TreeNode {
 }
 
 export interface GetFileContentParams {
-    repoOwnerId: string;
-    token: string | undefined;
     repoId: number;
     filePath: string;
     ref: string;
@@ -44,9 +43,6 @@ export interface GetFileContentResponse extends BaseGitResponse {
     };
 }
 
-function getApi(repoOwnerId: string, token: string | undefined) {
-    return rootBeakerApi
-}
 
 var tokenNotExistResponse: BaseGitResponse = {
     code: 401,
@@ -62,7 +58,7 @@ function apiErrorResponse(err: any): BaseGitResponse {
 
 
 export const getFileContent = async (params: GetFileContentParams): Promise<GetFileContentResponse> => {
-    let api = getApi(params.repoOwnerId, params.token)
+    let api = rootBeakerApi
     if (!api) {
         return tokenNotExistResponse as GetFileContentResponse;
     }
@@ -106,7 +102,6 @@ export const getFileContent = async (params: GetFileContentParams): Promise<GetF
 
 export interface GetUserReposParams {
     repoOwnerId: string;
-    token: string | undefined;
 }
 
 export interface GetUserReposResponse extends BaseGitResponse {
@@ -116,10 +111,240 @@ export interface GetUserReposResponse extends BaseGitResponse {
     };
 }
 
+export interface GetGroupReposParams {
+    groupId: string;
+}
+
+export interface GetGroupReposResponse extends BaseGitResponse {
+    code: number;
+    data: {
+        repos: TreeNode[];
+    };
+}
+
+export const getGroupRepos = async (params: GetGroupReposParams): Promise<GetGroupReposResponse> => {
+    let response: any = null;
+    let api = rootBeakerApi
+    if (!api) {
+        return tokenNotExistResponse as GetGroupReposResponse;
+    }
+    if (mock) {
+        response = [
+            {
+                "id": 1,
+                "description": null,
+                "name": "test1-proj-1",
+                "name_with_namespace": "test1l test1f / test1-proj-1",
+                "path": "test1-proj-1",
+                "path_with_namespace": "test1/test1-proj-1",
+                "created_at": "2023-11-30T06:37:32.116Z",
+                "default_branch": "main",
+                "tag_list": [],
+                "topics": [],
+                "ssh_url_to_repo": "git@1240edfb84bb:test1/test1-proj-1.git",
+                "http_url_to_repo": "http://1240edfb84bb/test1/test1-proj-1.git",
+                "web_url": "http://1240edfb84bb/test1/test1-proj-1",
+                "readme_url": "http://1240edfb84bb/test1/test1-proj-1/-/blob/main/README.md",
+                "forks_count": 0,
+                "avatar_url": null,
+                "star_count": 0,
+                "last_activity_at": "2023-11-30T07:56:38.839Z",
+                "namespace": {
+                    "id": 2,
+                    "name": "test1l test1f",
+                    "path": "test1",
+                    "kind": "user",
+                    "full_path": "test1",
+                    "parent_id": null,
+                    "avatar_url": "https://www.gravatar.com/avatar/50ce962eb454e5eed42442130ca028eb?s=80&d=identicon",
+                    "web_url": "http://1240edfb84bb/test1"
+                },
+                "_links": {
+                    "self": "http://1240edfb84bb/api/v4/projects/1",
+                    "issues": "http://1240edfb84bb/api/v4/projects/1/issues",
+                    "merge_requests": "http://1240edfb84bb/api/v4/projects/1/merge_requests",
+                    "repo_branches": "http://1240edfb84bb/api/v4/projects/1/repository/branches",
+                    "labels": "http://1240edfb84bb/api/v4/projects/1/labels",
+                    "events": "http://1240edfb84bb/api/v4/projects/1/events",
+                    "members": "http://1240edfb84bb/api/v4/projects/1/members",
+                    "cluster_agents": "http://1240edfb84bb/api/v4/projects/1/cluster_agents"
+                },
+                "packages_enabled": true,
+                "empty_repo": false,
+                "archived": false,
+                "visibility": "public",
+                "owner": {
+                    "id": 2,
+                    "username": "test1",
+                    "name": "test1l test1f",
+                    "state": "active",
+                    "locked": false,
+                    "avatar_url": "https://www.gravatar.com/avatar/50ce962eb454e5eed42442130ca028eb?s=80&d=identicon",
+                    "web_url": "http://1240edfb84bb/test1"
+                },
+                "resolve_outdated_diff_discussions": false,
+                "container_expiration_policy": {
+                    "cadence": "1d",
+                    "enabled": false,
+                    "keep_n": 10,
+                    "older_than": "90d",
+                    "name_regex": ".*",
+                    "name_regex_keep": null,
+                    "next_run_at": "2023-12-01T06:37:32.191Z"
+                },
+                "issues_enabled": true,
+                "merge_requests_enabled": true,
+                "wiki_enabled": true,
+                "jobs_enabled": true,
+                "snippets_enabled": true,
+                "container_registry_enabled": true,
+                "service_desk_enabled": false,
+                "service_desk_address": null,
+                "can_create_merge_request_in": true,
+                "issues_access_level": "enabled",
+                "repository_access_level": "enabled",
+                "merge_requests_access_level": "enabled",
+                "forking_access_level": "enabled",
+                "wiki_access_level": "enabled",
+                "builds_access_level": "enabled",
+                "snippets_access_level": "enabled",
+                "pages_access_level": "enabled",
+                "analytics_access_level": "enabled",
+                "container_registry_access_level": "enabled",
+                "security_and_compliance_access_level": "private",
+                "releases_access_level": "enabled",
+                "environments_access_level": "enabled",
+                "feature_flags_access_level": "enabled",
+                "infrastructure_access_level": "enabled",
+                "monitor_access_level": "enabled",
+                "model_experiments_access_level": "enabled",
+                "emails_disabled": false,
+                "emails_enabled": true,
+                "shared_runners_enabled": true,
+                "lfs_enabled": true,
+                "creator_id": 2,
+                "import_url": null,
+                "import_type": null,
+                "import_status": "none",
+                "open_issues_count": 0,
+                "description_html": "",
+                "updated_at": "2023-11-30T07:56:38.839Z",
+                "ci_default_git_depth": 20,
+                "ci_forward_deployment_enabled": true,
+                "ci_forward_deployment_rollback_allowed": true,
+                "ci_job_token_scope_enabled": false,
+                "ci_separated_caches": true,
+                "ci_allow_fork_pipelines_to_run_in_parent_project": true,
+                "build_git_strategy": "fetch",
+                "keep_latest_artifact": true,
+                "restrict_user_defined_variables": false,
+                "runners_token": "GR1348941hAyKKaCzYRABGZ5pHCTm",
+                "runner_token_expiration_interval": null,
+                "group_runners_enabled": true,
+                "auto_cancel_pending_pipelines": "enabled",
+                "build_timeout": 3600,
+                "auto_devops_enabled": true,
+                "auto_devops_deploy_strategy": "continuous",
+                "ci_config_path": null,
+                "public_jobs": true,
+                "shared_with_groups": [],
+                "only_allow_merge_if_pipeline_succeeds": false,
+                "allow_merge_on_skipped_pipeline": null,
+                "request_access_enabled": true,
+                "only_allow_merge_if_all_discussions_are_resolved": false,
+                "remove_source_branch_after_merge": true,
+                "printing_merge_request_link_enabled": true,
+                "merge_method": "merge",
+                "squash_option": "default_off",
+                "enforce_auth_checks_on_uploads": true,
+                "suggestion_commit_message": null,
+                "merge_commit_template": null,
+                "squash_commit_template": null,
+                "issue_branch_template": null,
+                "autoclose_referenced_issues": true,
+                "requirements_enabled": false,
+                "requirements_access_level": "enabled",
+                "security_and_compliance_enabled": true,
+                "compliance_frameworks": [],
+                "permissions": {
+                    "project_access": {
+                        "access_level": 50,
+                        "notification_level": 3
+                    },
+                    "group_access": null
+                }
+            }
+        ]
+    } else {
+        try {
+            response = await api.Groups.allProjects(params.groupId, { perPage: 100 })
+        } catch (e) {
+            return apiErrorResponse(e) as GetGroupReposResponse;
+        }
+    }
+    console.log("getGroupRepos response", response)
+    let result: GetGroupReposResponse = {
+        "code": 200,
+        "msg": "success",
+        "data": {
+            "repos": [] as TreeNode[]
+        }
+    }
+    response.forEach((repo: any) => {
+        let repoNode: TreeNode = {
+            name: repo.name,
+            children: null,
+            fullPath: "",
+            isLeaf: false,
+            root: true,
+            content: null,
+            contentLoading: false,
+            repoName: repo.name,
+            repoId: repo.id,
+            ref: repo.default_branch,
+        }
+        result.data.repos.push(repoNode);
+    });
+    return result;
+}
+
+export interface GetUserParams {
+    gitlabUserName: string;
+}
+
+export interface GetUserResponse extends BaseGitResponse {
+    code: number;
+    data: {
+        userInfos: any;
+    };
+}
+
+export const getUser = async (params: GetUserParams): Promise<GetUserReponse> => {
+    let response: any = null;
+    let api = rootBeakerApi
+    if (!api) {
+        return tokenNotExistResponse as GetUserReposResponse;
+    }
+    try {
+        response = await api.Users.all({ username: params.gitlabUserName, perPage: 1 })
+    } catch (e) {
+        return apiErrorResponse(e) as GetUserReposResponse;
+    }
+    console.log("getUser response", response)
+    let result: GetUserResponse = {
+        "code": 200,
+        "msg": "success",
+        "data": {
+            "userInfos": response
+        }
+    }
+    return result
+}
+
 
 export const getUserRepos = async (params: GetUserReposParams): Promise<GetUserReposResponse> => {
     let response: any = null;
-    let api = getApi(params.repoOwnerId, params.token)
+    let api = rootBeakerApi
     if (!api) {
         return tokenNotExistResponse as GetUserReposResponse;
     }
@@ -304,8 +529,6 @@ export const getUserRepos = async (params: GetUserReposParams): Promise<GetUserR
 }
 
 export interface GetRepoContentsParams {
-    repoOwnerId: string;
-    token: string | undefined;
     repoName: string;
     repoId: number;
     ref: string;
@@ -321,7 +544,7 @@ export interface GetRepoContentsResponse extends BaseGitResponse {
 
 export const getRepoContents = async (params: GetRepoContentsParams): Promise<GetRepoContentsResponse> => {
     let response: any = null;
-    let api = getApi(params.repoOwnerId, params.token)
+    let api = rootBeakerApi
     if (!api) {
         return tokenNotExistResponse as GetRepoContentsResponse;
     }

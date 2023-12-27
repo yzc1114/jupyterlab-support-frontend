@@ -4,8 +4,22 @@
             <el-tab-pane v-for="(tab, tabName, index) in codeTabs" :label="(tab.label as string)" :name="tabName"
                 :key="tabName">
 
-                <div class="repo-container">
-                    <el-tree style="min-height: 100px; width: 100%;" v-loading="tab.dataSource == null"
+                <div v-if="tabName == 'user' && tab.gitOwnerId == null">
+                    <el-row class="form-item-row">
+                        <el-col :span="18" class="form-item-label center-box">
+                            <el-input v-model="userInputGitlabName" placeholder="Gitlab用户名" />
+                        </el-col>
+                        <el-col :span="2">
+                        </el-col>
+                        <el-col :span="4" class="center-box">
+                            <el-button type="primary" @click="handleTabChange(tabName)">
+                                确定
+                            </el-button>
+                        </el-col>
+                    </el-row>
+                </div>
+                <div v-else class="repo-container">
+                    <el-tree v-if="tab.dataSource == null || tab.dataSource.length > 0" style="min-height: 100px; width: 100%;" v-loading="tab.dataSource == null"
                         :data="tab.dataSource" :props="props" :expand-on-click-node="false" lazy :load="handleLoadNode">
                         <template #default="{ node, data }">
                             <span class="custom-tree-node">
@@ -29,6 +43,7 @@
                             </span>
                         </template>
                     </el-tree>
+                    <div v-else class="no-code-message">暂无代码仓库，<span class="link-to-gitlab" @click="handleGotoGitlab()">前往</span>创建</div>
                 </div>
 
             </el-tab-pane>
@@ -63,7 +78,7 @@ import { python } from '@codemirror/lang-python'
 import { oneDark } from '@codemirror/theme-one-dark'
 import { EditorState } from "@codemirror/state"
 import { listAllCodeSnippets } from '@/api/cluster'
-import { getUserRepos, getFileContent, getRepoContents, type BaseGitResponse, type TreeNode, type GetUserReposParams, type GetRepoContentsParams, type GetFileContentParams } from '@/api/git'
+import { getUser, getUserRepos, getGroupRepos, getFileContent, getRepoContents, type BaseGitResponse, type TreeNode, type GetUserParams, type GetUserReposParams, type GetGroupReposParams, type GetRepoContentsParams, type GetFileContentParams } from '@/api/git'
 import type Node from 'element-plus/es/components/tree/src/model/node'
 
 
@@ -125,24 +140,23 @@ export default defineComponent({
                 tabSize: 4,
             },
             activeTab: 'platform', // 'platform' or 'user'
+            git_base_url: import.meta.env.VITE_GIT_BASE_URL,
+            userInputGitlabName: "",
             codeTabs: {
                 'platform': {
                     label: '模型代码',
                     gitOwnerId: 'root',
-                    token: undefined, // glpat-RZnzx43BUo4x8T5cpyyG
                     dataSource: null as TreeNode[] | null,
                 },
                 'user': {
                     label: '用户代码',
-                    gitOwnerId: "test1",
-                    token: 'glpat-RZnzx43BUo4x8T5cpyyG', // glpat-tFDz_cwgwv_oHLCmvLLj
+                    gitOwnerId: null,
                     dataSource: null as TreeNode[] | null,
                 },
             } as {
                 [key: string]: {
                     label: string,
-                    gitOwnerId: string,
-                    token: string | undefined,
+                    gitOwnerId: string|null,
                     dataSource: TreeNode[],
                 }
             }
@@ -155,7 +169,7 @@ export default defineComponent({
         //     this.codeTabs[this.activeTab].dataSource = repos
         // }
         // }, 5000)
-        let repos = await this.loadRepos(this.codeTabs[this.activeTab].gitOwnerId, this.codeTabs[this.activeTab].token)
+        let repos = await this.loadAIGroupRepos()
         if (repos) {
             this.codeTabs[this.activeTab].dataSource = repos
         }
@@ -175,15 +189,39 @@ export default defineComponent({
             //     }
             //     let repos = await this.loadRepos(this.codeTabs[this.activeTab].gitOwnerId)
             //     if (repos) {
-            //         this.codeTabs[tabName].dataSource = repos
+            //         // this.codeTabs[tabName].dataSource = repos
+            //         this.codeTabs[tabName].dataSource = []
             //     }
-            // }, 5000)
-            console.log("tab changed", tabName)
+            // }, 1000)
+
             if (this.codeTabs[tabName].dataSource != null && this.codeTabs[tabName].dataSource.length > 0) {
                 return
             }
-            let repos = await this.loadRepos(this.codeTabs[this.activeTab].gitOwnerId,
-            this.codeTabs[this.activeTab].token)
+            console.log("tab changed", tabName)
+            var _this = this
+            let repos = await async function() {
+                if (tabName == "platform") {
+                    return await _this.loadAIGroupRepos()
+                } else if (tabName == "user") {
+                    let response = await getUser({ gitlabUserName: _this.userInputGitlabName })
+                    if (response.code != 200) {
+                        ElMessage.error('加载用户信息失败！');
+                        return null
+                    }
+                    if (response.data == null || response.data.userInfos.length == 0) {
+                        ElMessage.error('用户不存在！');
+                        return null
+                    }
+                    console.log("getUserResponse at tabChanged", response)
+                    _this.codeTabs[_this.activeTab].gitOwnerId = response.data.userInfos[0].id
+                    if (_this.codeTabs[_this.activeTab].gitOwnerId == null) {
+                        return null
+                    }
+                    return await _this.loadReposByUser(_this.codeTabs[_this.activeTab].gitOwnerId as string)
+                } else {
+                    console.log("impossible")
+                }
+            }()
             if (repos) {
                 this.codeTabs[tabName].dataSource = repos
             }
@@ -208,8 +246,6 @@ export default defineComponent({
             }
             let dirPath = data.fullPath
             let loadedRepoContents = await this.loadRepoContents(
-                this.codeTabs[this.activeTab].gitOwnerId,
-                this.codeTabs[this.activeTab].token,
                 data.repoName,
                 data.repoId,
                 data.ref,
@@ -233,13 +269,10 @@ export default defineComponent({
                 showCodeDialog(data.name, data.content);
                 return
             }
-
             data.contentLoading = true;
             setTimeout(async () => {
                 let content = await this.loadFileContent(
-                    this.codeTabs[this.activeTab].gitOwnerId,
-                    this.codeTabs[this.activeTab].token,
-                    data.repoId, data.repoName, data.fullPath);
+                    data.repoId, data.ref, data.fullPath);
                 data.contentLoading = false;
                 if (!content) {
                     return;
@@ -253,29 +286,46 @@ export default defineComponent({
             // open new browser tab to this url
             window.open(url);
         },
+        async handleGotoGitlab() {
+            let url = `${import.meta.env.VITE_GIT_BASE_URL}`
+            console.log("handleGotoGitlab", url)
+            // open new browser tab to this url
+            window.open(url);
+        },
         async handleCopyCloneCmd(data: TreeNode) {
             let cmd = `git clone ${import.meta.env.VITE_GIT_BASE_URL}/${this.codeTabs[this.activeTab].gitOwnerId}/${data.repoName}.git`
             copyToClipboard(cmd)
             ElMessage.success('代码仓库clone命令已复制到剪贴板！');
         },
-        async loadRepos(gitOwnerId: string, token: string|undefined) {
+        async loadReposByUser(gitOwnerId: string) {
             let getUserReposParams: GetUserReposParams = {
                 repoOwnerId: gitOwnerId,
-                token: token,
             }
             console.log("get code repos request", getUserReposParams)
             let response = await getUserRepos(getUserReposParams)
             console.log("get code repos response", response)
             if (response.code != 200 || response.data == null) {
                 ElMessage.error('加载代码仓库失败！');
-                return
+                return null
             }
             return response.data.repos
         },
-        async loadRepoContents(gitOwnerId: string, token: string | undefined, repoName: string, repoId: number, ref: string, dirPath: string) {
+        async loadAIGroupRepos() {
+            let groupId = `${import.meta.env.VITE_GIT_AI_GROUP_ID}` // AI工作台群组
+            let getGroupReposParams: GetGroupReposParams = {
+                groupId: groupId,
+            }
+            console.log("get code repos request", getGroupReposParams)
+            let response = await getGroupRepos(getGroupReposParams)
+            console.log("get code repos response", response)
+            if (response.code != 200 || response.data == null) {
+                ElMessage.error('加载代码仓库失败！');
+                return null
+            }
+            return response.data.repos
+        },
+        async loadRepoContents(repoName: string, repoId: number, ref: string, dirPath: string) {
             let params: GetRepoContentsParams = {
-                repoOwnerId: gitOwnerId,
-                token: token,
                 repoId: repoId,
                 repoName: repoName,
                 ref: ref,
@@ -290,10 +340,8 @@ export default defineComponent({
             }
             return response.data.children
         },
-        async loadFileContent(gitOwnerId: string, token: string | undefined, repoId: number, ref: string, fileFullPath: string) {
+        async loadFileContent(repoId: number, ref: string, fileFullPath: string) {
             let getFileContentParams: GetFileContentParams = {
-                repoOwnerId: gitOwnerId,
-                token: token,
                 repoId: repoId,
                 ref: ref,
                 filePath: fileFullPath,
@@ -414,6 +462,40 @@ export default defineComponent({
     font-size: calc(100vw * 15 / 1920);
 }
 
+.no-code-message {
+    font-size: calc(100vw * 15 / 1920);
+    color: gray;
+    text-align: center;
+}
+
+.link-to-gitlab {
+    color: #007bff;
+    cursor: pointer;
+}
+
+.form-item-row {
+    padding-bottom: 10px;
+}
+
+.form-item-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(100vw * 13 / 1920);
+}
+
+.center-box {
+    /* style="display: flex; align-items: center; justify-content: center;" */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+:deep(.el-form-item__label) {
+    text-align: left;
+    font-size: calc(100vw * 13 / 1920);
+    /* font-weight: bold; */
+}
 
 /* .loading {
     height: 30px;
