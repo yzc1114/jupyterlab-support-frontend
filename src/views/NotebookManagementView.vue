@@ -80,6 +80,7 @@ export default defineComponent({
           }
           let instance: Instance = parseInstance(pod)
           nodeInfo.instances.push(instance)
+          nodeInfo.gpuUsed += instance.gpuUsage
         }
         resultNodes.push(nodeInfo)
       }

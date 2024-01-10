@@ -181,6 +181,10 @@ export default {
       let cpu = Number(this.form.cpu.toFixed(1)) * 1000
       let mem = Number(this.form.memory.toFixed(1)) * 1000
       let gpu = Number(this.form.gpu.toFixed(0))
+      if (this.node.gpuTotal - this.node.gpuUsed < gpu) {
+        ElMessage.error(`GPU资源不足，当前节点剩余GPU资源为 ${this.node.gpuTotal - this.node.gpuUsed}个，请重新输入`);
+        return false
+      }
       let image = this.form.image
       let nodeName = this.$route.params.nodeId
       let labBaseUrl = `${import.meta.env.VITE_BASE_URL}/lab/${userId}/${instanceName}`

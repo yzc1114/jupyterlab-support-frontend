@@ -55,7 +55,7 @@ export default defineComponent({
         <p>GPU: {{ node.gpuUsed }} / {{ node.gpuTotal }}</p> -->
         <p>CPU: {{ node.cpuTotal }}</p>
         <p>内存: {{ node.memoryTotal.toFixed(2) }} GB</p>
-        <p>GPU: {{ node.gpuTotal }}</p>
+        <p>GPU: {{ node.gpuUsed/node.gpuTotal }}</p>
         <el-button class="node-info-button" @click="createInstance" size="large" type="primary">创建实例</el-button>
       </div>
     </div>
