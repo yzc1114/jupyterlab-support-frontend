@@ -31,13 +31,15 @@
         <el-row class="row-buttons">
           <el-col :span="12">
             <el-form-item label="CPU" prop="cpu">
-              <el-input-number :min="0.1" v-model="form.cpu" :step="0.1" :precision="1" controls-position="right"></el-input-number>
+              <el-input-number :min="0.1" v-model="form.cpu" :step="0.1" :precision="1"
+                controls-position="right"></el-input-number>
             </el-form-item>
           </el-col>
 
           <el-col :span="12">
             <el-form-item label="内存" prop="memory">
-              <el-input-number :min="0.1" v-model="form.memory" :step="0.1" :precision="1" controls-position="right"></el-input-number>
+              <el-input-number :min="0.1" v-model="form.memory" :step="0.1" :precision="1"
+                controls-position="right"></el-input-number>
             </el-form-item>
           </el-col>
         </el-row>
@@ -59,7 +61,7 @@
 import { defineComponent } from 'vue'
 import NodeStatus from '@/components/NodeStatus.vue'
 import { listAllNodes, listAllPods, getService, getNode, getPod, createResource } from '@/api/cluster'
-import { parseNode } from '@/utils/parser'
+import { parseNode, parseInstance } from '@/utils/parser'
 import { type UserSampleSet, type UserSampleApiResponse, type UserSampleSetQueryParams, type PlatformSampleSet, type PlatformSampleApiResponse, type PlatformSampleSetQueryParams, getUserSampleList, getPlatformSampleList } from '@/api/samples'
 import { ElMessage } from 'element-plus'; // 引入 Element Plus 组件库中的 Message 组件
 import { type Node, type Instance } from '@/typeDefs/typeDefs'; // 假设有定义 Node 和 Instance 类型
@@ -126,6 +128,24 @@ export default {
       }
       let node = nodeResponse.data
       let nodeInfo: Node = parseNode(node)
+      let namespace = import.meta.env.VITE_NAMESPACE
+      console.log("namespace", namespace)
+      let podLabels = { "app": "jupyterlab-instance" }
+      let podsResponse = await listAllPods(namespace, podLabels)
+      console.log("podsResponse", podsResponse)
+      if (podsResponse.code != 20000) {
+        ElMessage.error(podsResponse.message);
+        return
+      }
+      let pods = podsResponse.data.items
+      for (let pod of pods) {
+        if (pod.spec.nodeName != node.metadata.name) {
+          continue
+        }
+        let instance: Instance = parseInstance(pod)
+        nodeInfo.gpuUsed += instance.gpuUsage
+        // nodeInfo.instances.push(instance)
+      }
       this.node = nodeInfo
       // setTimeout(() => {
       //   this.nodeLoaded = true
@@ -370,7 +390,7 @@ export default {
   text-align: left;
 }
 
-.button-container > button {
+.button-container>button {
   font-size: calc(100vw * 20 / 1920);
 }
 
@@ -399,7 +419,7 @@ h2 {
   padding-right: 5px;
 }
 
-.row-buttons >*{
+.row-buttons>* {
   padding-right: 5px;
 }
 
@@ -407,14 +427,13 @@ h2 {
   font-size: calc(100vw * 50 / 1920);
   margin-bottom: 10px;
   font-weight: bold;
-} 
-
+}
 </style>
 
 
 <style scoped>
 ::v-deep .el-form-item__label {
-  text-align: left; 
+  text-align: left;
   font-size: calc(100vw * 15 / 1920);
   /* font-weight: bold; */
 }

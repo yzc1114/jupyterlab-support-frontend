@@ -41,9 +41,10 @@ export function parseNode(node: any): Node {
 export function parseInstance(pod: any): Instance {
   let gpuUsage = 0;
   if ("nvidia.com/gpu" in pod.spec.containers[0].resources.requests) {
-    gpuUsage = pod.spec.containers[0].resources.requests["nvidia.com/gpu"];
+    gpuUsage = Number(pod.spec.containers[0].resources.requests["nvidia.com/gpu"]);
   }
   let instance: Instance = {
+    user: pod.metadata.labels.user,
     createTime: pod.metadata.creationTimestamp,
     name: pod.metadata.name,
     status: pod.status.phase,

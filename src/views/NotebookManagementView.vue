@@ -62,7 +62,8 @@ export default defineComponent({
       let nodes = nodesResponse.data.items
       let namespace = import.meta.env.VITE_NAMESPACE
       console.log("namespace", namespace)
-      let podLabels = { "app": "jupyterlab-instance", "user": this.$route.params.userId }
+      let podLabels = { "app": "jupyterlab-instance" }
+      // "user": this.$route.params.userId
       let podsResponse = await listAllPods(namespace, podLabels)
       console.log("podsResponse", podsResponse)
       if (podsResponse.code != 20000) {
@@ -79,8 +80,10 @@ export default defineComponent({
             continue
           }
           let instance: Instance = parseInstance(pod)
-          nodeInfo.instances.push(instance)
           nodeInfo.gpuUsed += instance.gpuUsage
+          if (instance.user == this.$route.params.userId) {
+            nodeInfo.instances.push(instance)
+          }
         }
         resultNodes.push(nodeInfo)
       }

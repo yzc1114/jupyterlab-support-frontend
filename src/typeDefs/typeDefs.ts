@@ -12,6 +12,7 @@ export interface Node {
 
 export interface Instance {
     id: string;
+    user: string;
     name: string;
     status: string;
     image: string;
