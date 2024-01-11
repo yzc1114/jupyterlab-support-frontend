@@ -4,8 +4,8 @@
             :header-cell-style="{ 'text-align': 'center' }">
             <el-table-column v-for="column in columns" :key="column.prop" :label="column.label" :prop="column.prop">
                 <!-- Custom slot for the last column to add a button -->
-                <template v-if="column.prop === 'storageLocation'" v-slot="scope">
-                    <el-button @click="copyStorageLocation(scope.row.storageLocation)">复制地址</el-button>
+                <template v-if="column.prop === 'downloadPath'" v-slot="scope">
+                    <el-button @click="copyDownloadPath(scope.row.downloadPath)">复制地址</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -43,8 +43,8 @@ export default defineComponent({
         },
     },
     methods: {
-        copyStorageLocation(storageLocation: string) {
-            copyToClipboard(storageLocation)
+        copyDownloadPath(downloadPath: string) {
+            copyToClipboard(downloadPath)
             ElMessage.success('地址已复制到剪贴板！');
         },
         handlePageChange(page: number) {
