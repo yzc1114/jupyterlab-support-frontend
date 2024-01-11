@@ -257,6 +257,10 @@ export default {
                 {
                   "name": "nfs-data-volume",
                   "mountPath": "/data"
+                },
+                {
+                  "name": "data-samples-volume",
+                  "mountPath": "/mnt"
                 }
               ]
             }
@@ -266,6 +270,12 @@ export default {
               "name": "nfs-data-volume",
               "hostPath": {
                 "path": "/data"
+              }
+            },
+            {
+              "name": "data-samples-volume",
+              "hostPath": {
+                "path": "/mnt"
               }
             }
           ],

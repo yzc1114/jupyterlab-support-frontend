@@ -168,7 +168,7 @@ export default defineComponent({
                 { label: '波段数', prop: 'bands' },
                 { label: '分辨率', prop: 'resolution' },
                 { label: '类别数', prop: 'classNumber' },
-                { label: '操作', prop: 'storageLocation' },
+                { label: '操作', prop: 'downloadPath' },
             ],
             userSampleCheckboxes: {
                 sampleSetName: false,
