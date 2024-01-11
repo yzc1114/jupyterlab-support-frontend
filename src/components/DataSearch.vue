@@ -81,7 +81,7 @@
                 :cell-style="{ textAlign: 'center' }" :header-cell-style="{ 'text-align': 'center' }">
                 <el-table-column label="选择" min-width="40">
                     <template #default="{ row }">
-                        <el-checkbox v-model="dataSearchResultSelectedImages[row.thumbUrl]"></el-checkbox>
+                        <el-checkbox v-model="dataSearchResultSelectedImages[row.fileUrl]"></el-checkbox>
                     </template>
                 </el-table-column>
 
@@ -149,6 +149,7 @@ var defaultDataSearchParams = {
     regionName: "北京市",
     filterSatelliteList: [],
     ifThumbUrl: false,
+    ifExistFileUrl: true,
 } as DataRequestParams
 
 var defaultDataSearchModel = {
@@ -226,6 +227,7 @@ export default defineComponent({
             params.maxCloudPercent = dataSearchModel.maxCloudPercent
             params.minImageGsd = dataSearchModel.minImageGSD
             params.maxImageGsd = dataSearchModel.maxImageGSD
+            params.ifExistFileUrl = true
             params.satelliteList = []
             for (let satelliteName in dataSearchModel.satellites) {
                 let satellite = dataSearchModel.satellites[satelliteName]

@@ -47,6 +47,7 @@ export interface DataRequestParams {
     regionName: string;
     filterSatelliteList: Satellite[];
     ifThumbUrl: boolean;
+    ifExistFileUrl: boolean;
 }
 
 export interface DataResponse {
