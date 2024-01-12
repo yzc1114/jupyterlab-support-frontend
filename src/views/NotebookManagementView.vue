@@ -172,11 +172,11 @@ export default defineComponent({
       let cpuOption = createChartOption()
       let memOption = createChartOption()
       let gpuOption = createChartOption()
-      cpuOption.series[0].data[0].value = cpuUsed/cpuTotal
+      cpuOption.series[0].data[0].value = cpuUsed/cpuTotal*100
       cpuOption.series[0].detail.formatter = `${cpuUsed}/${cpuTotal} 核`
-      memOption.series[0].data[0].value = memUsed/memTotal
+      memOption.series[0].data[0].value = memUsed/memTotal*100
       memOption.series[0].detail.formatter = `${memUsed.toFixed(2)}/${memTotal.toFixed(2)} GB`
-      gpuOption.series[0].data[0].value = gpuUsed/gpuTotal
+      gpuOption.series[0].data[0].value = gpuUsed/gpuTotal*100
       gpuOption.series[0].detail.formatter = `${gpuUsed}/${gpuTotal} 块`
       cpuChart.setOption(cpuOption)
       memChart.setOption(memOption)
