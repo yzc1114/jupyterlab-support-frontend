@@ -20,7 +20,10 @@ export function convertToGB(input: string): number {
         const bytes = numberPart * unitToBytes[unitPart];
         
         // 将字节转换为GB
-        const GB = bytes / (1024 * 1024 * 1024);
+        let GB = bytes / (1024 * 1024 * 1024);
+
+        // 保留两位小数
+        GB = Math.round(GB * 100) / 100;
         
         return GB;
       }
@@ -40,7 +43,10 @@ export function convertCPUToCore(input: string): number {
     console.log("numberPart", numberPart)
     const unitPart = match[2];
     if (unitPart === "m") {
-      return numberPart / 1000;
+      let core = numberPart / 1000;
+      // 保留一位
+      core = Math.round(core * 10) / 10;
+      return core;
     } else {
       return numberPart;
     }
