@@ -35,8 +35,8 @@ export const loadNodesWithInsances = async (userId: string) => {
             }
             let instance: Instance = parseInstance(pod)
             nodeInfo.gpuUsed += instance.gpuUsage
-            nodeInfo.memoryUsed += convertToGB(instance.memoryUsage)
-            nodeInfo.cpuUsed += convertCPUToCore(instance.cpuUsage)
+            nodeInfo.memoryUsed += instance.memoryUsage
+            nodeInfo.cpuUsed += instance.cpuUsage
             if (userId == "admin") {
                 nodeInfo.instances.push(instance)
             } else if (instance.user == userId) {

@@ -3,10 +3,8 @@
     <div class="title-container">
       <h1 class="title">实例管理</h1>
     </div>
-    <div v-if="userId == 'admin'">
-      <div class="title-container">
+    <div v-if="userId == 'admin'" class="title-container">
       <h3 class="title2">集群状态</h3>
-    </div>
     </div>
     <div v-if="userId == 'admin'" class="node-status-container">
       <div class="cluster-status-container">
@@ -29,8 +27,7 @@ import UserInstances from '@/components/UserInstances.vue'
 import { listAllNodes, listAllPods, listAllServices, deleteResource, loadNodesWithInsances } from '@/api/cluster'
 import { ElMessage } from 'element-plus'; // 引入 Element Plus 组件库中的 Message 组件
 import { type Node, type Instance } from '@/typeDefs/typeDefs'; // 假设有定义 Node 和 Instance 类型
-import { convertToGB } from '@/utils/unit';
-import { parseNode, parseInstance } from '@/utils/parser';
+import { convertCPUToCore, convertToGB } from '@/utils/unit';
 import { ca } from 'element-plus/es/locale/index.mjs';
 import * as echarts from 'echarts';
 
@@ -112,6 +109,7 @@ export default defineComponent({
     clearInterval(this.timerId);
   },
   async mounted() {
+    console.log(`${convertCPUToCore("64")}`)
     let userId: string | string[] = this.$route.params.userId
     if (Array.isArray(userId)) {
       userId = userId[0]
@@ -142,12 +140,12 @@ export default defineComponent({
       let gpuTotal = 0
       let gpuUsed = 0
       for (let node of this.nodes) {
-        cpuTotal += node.cpuTotal
-        cpuUsed += node.cpuUsed
-        memTotal += node.memoryTotal
-        memUsed += node.memoryUsed
-        gpuTotal += node.gpuTotal
-        gpuUsed += node.gpuUsed
+        cpuTotal += Number(node.cpuTotal)
+        cpuUsed += Number(node.cpuUsed)
+        memTotal += Number(node.memoryTotal)
+        memUsed += Number(node.memoryUsed)
+        gpuTotal += Number(node.gpuTotal)
+        gpuUsed += Number(node.gpuUsed)
       }
       let cpuChart: any
       let memChart: any
@@ -171,11 +169,11 @@ export default defineComponent({
       let cpuOption = createChartOption()
       let memOption = createChartOption()
       let gpuOption = createChartOption()
-      cpuOption.series[0].data[0].value = cpuUsed
+      cpuOption.series[0].data[0].value = cpuUsed/cpuTotal
       cpuOption.series[0].detail.formatter = `${cpuUsed}/${cpuTotal} 核`
-      memOption.series[0].data[0].value = memUsed
+      memOption.series[0].data[0].value = memUsed/memTotal
       memOption.series[0].detail.formatter = `${memUsed.toFixed(2)}/${memTotal.toFixed(2)} GB`
-      gpuOption.series[0].data[0].value = gpuUsed
+      gpuOption.series[0].data[0].value = gpuUsed/gpuTotal
       gpuOption.series[0].detail.formatter = `${gpuUsed}/${gpuTotal} 块`
       cpuChart.setOption(cpuOption)
       memChart.setOption(memOption)

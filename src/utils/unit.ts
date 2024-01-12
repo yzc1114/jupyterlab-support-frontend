@@ -34,9 +34,10 @@ export function convertCPUToCore(input: string): number {
   // cpu can be in the format of 100m or 1
   // 100m means 100 milli core, 1 means 1 core
   // 1 core = 1000 milli core
-  const match = input.match(/^(\d+)(\w+)$/);
+  const match = input.match(/^(\d+)(\w*)$/);
   if (match && match.length === 3) {
     const numberPart = parseInt(match[1]);
+    console.log("numberPart", numberPart)
     const unitPart = match[2];
     if (unitPart === "m") {
       return numberPart / 1000;

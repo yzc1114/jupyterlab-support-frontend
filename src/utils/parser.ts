@@ -1,7 +1,7 @@
 
 
 import { type Node, type Instance } from '@/typeDefs/typeDefs'; // 假设有定义 Node 和 Instance 类型
-import { convertToGB } from './unit';
+import { convertToGB, convertCPUToCore } from './unit';
 
 
 const region = "test"
@@ -28,7 +28,7 @@ export function parseNode(node: any): Node {
     name: node.metadata.name,
     available: nodeAvaliable,
     cpuUsed: 0,
-    cpuTotal: node.status.allocatable.cpu,
+    cpuTotal: Number(node.status.allocatable.cpu),
     memoryUsed: 0,
     memoryTotal: convertToGB(node.status.allocatable.memory),
     gpuUsed: gpu_used,
@@ -50,8 +50,8 @@ export function parseInstance(pod: any): Instance {
     name: pod.metadata.name,
     status: pod.status.phase,
     image: pod.spec.containers[0].image,
-    cpuUsage: pod.spec.containers[0].resources.requests.cpu,
-    memoryUsage: pod.spec.containers[0].resources.requests.memory,
+    cpuUsage: convertCPUToCore(pod.spec.containers[0].resources.requests.cpu),
+    memoryUsage: convertToGB(pod.spec.containers[0].resources.requests.memory),
     gpuUsage: gpuUsage,
     id: pod.metadata.uid,
   }
