@@ -81,7 +81,7 @@ export function createPodYaml(instanceName: string, userId: string, image: strin
     return podYaml
 }
 
-export const createServiceYaml = async (instanceName: string, userId: string) => {
+export function createServiceYaml(instanceName: string, userId: string) {
     let serviceYaml = {
         "apiVersion": "v1",
         "kind": "Service",
@@ -112,7 +112,7 @@ export const createServiceYaml = async (instanceName: string, userId: string) =>
 }
 
 
-export const createIngressYaml = async (instanceName: string, userId: string, labBaseUrl: string) => {
+export function createIngressYaml(instanceName: string, userId: string, labBaseUrl: string) {
     let ingressYaml = {
         "apiVersion": "networking.k8s.io/v1",
         "kind": "Ingress",
