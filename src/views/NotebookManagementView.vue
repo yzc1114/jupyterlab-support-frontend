@@ -133,6 +133,9 @@ export default defineComponent({
       this.refreshed += 1
     },
     updateCharts(isInit: boolean) {
+      if (this.userId != "admin") {
+        return
+      }
       let cpuTotal = 0
       let cpuUsed = 0
       let memTotal = 0

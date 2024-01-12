@@ -182,10 +182,10 @@ export default {
       let targetNode: Node|null = null;
       for (let node of this.nodes) {
         // 检查是否存在资源足够的节点
-        if (node.cpuTotal < cpu) {
+        if (node.cpuTotal < cpu/1000) {
           continue
         }
-        if (node.memoryTotal - node.memoryUsed < mem) {
+        if (node.memoryTotal - node.memoryUsed < mem/1000) {
           continue
         }
         if (node.gpuTotal - node.gpuUsed < gpu) {
