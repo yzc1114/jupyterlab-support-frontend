@@ -180,7 +180,13 @@ export default {
       let gpu = Number(this.form.gpu.toFixed(0))
       console.log("doCreateInstance, cpu: ", cpu, "mem: ", mem, "gpu: ", gpu)
       let targetNode: Node|null = null;
-      for (let node of this.nodes) {
+      // 复制this.nodes
+      let nodes = this.nodes.slice()
+      // 将nodes按照instances的长度排序，越短越靠前
+      nodes.sort((a, b) => {
+        return a.instances.length - b.instances.length
+      })
+      for (let node of nodes) {
         // 检查是否存在资源足够的节点
         if (node.cpuTotal < cpu/1000) {
           continue
