@@ -15,7 +15,7 @@
       <NodeStatus v-for="n in nodes" :node="n" :user-id="userId" :key="n.name" @delete="handleInstanceDelete" />
     </div>
     <div v-else class="user-instances-container">
-      <UserInstances :nodes="nodes" :user-id="userId" :key="refreshed" />
+      <UserInstances :nodes="nodes" :user-id="userId" :key="refreshed" @delete="handleInstanceDelete" />
     </div>
   </div>
 </template>
