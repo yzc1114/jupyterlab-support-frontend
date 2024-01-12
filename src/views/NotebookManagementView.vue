@@ -3,8 +3,10 @@
     <div class="title-container">
       <h1 class="title">实例管理</h1>
     </div>
-    <div class="title-container">
+    <div v-if="userId == 'admin'">
+      <div class="title-container">
       <h3 class="title2">集群状态</h3>
+    </div>
     </div>
     <div v-if="userId == 'admin'" class="node-status-container">
       <div class="cluster-status-container">

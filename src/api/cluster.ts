@@ -5,7 +5,7 @@ import { type Node, type Instance } from '@/typeDefs/typeDefs';
 
 const region = "local"
 const maxLimit = 100
-const mock = true
+const mock = false
 
 export const loadNodesWithInsances = async (userId: string) => {
     // load all information we need
