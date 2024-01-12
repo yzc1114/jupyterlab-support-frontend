@@ -1,12 +1,12 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { type Node, type Instance } from '@/typeDefs/typeDefs';
+import { type Node, type Instance } from '@/typeDefs/typeDefs'; // 假设有定义 Node 和 Instance 类型
 
 export default defineComponent({
-  name: 'NodeStatus',
+  name: 'UserInstances',
   props: {
-    node: {
-      type: Object as () => Node,
+    nodes: {
+      type: Object as () => Node[],
       required: true,
     },
     userId: {
@@ -14,14 +14,31 @@ export default defineComponent({
       required: true,
     },
   },
+  data() {
+    return {
+      instances: [] as Instance[],
+    };
+  },
   mounted() {
-    console.log("NodeStatus userId", this.userId)
+    console.log("UserInstances userId", this.userId)
+    this.initInstances()
   },
   methods: {
+    initInstances() {
+      this.instances = []
+      for (let node of this.nodes) {
+        for (let instance of node.instances) {
+          if (instance.user == this.userId) {
+            this.instances.push(instance)
+          }
+        }
+      }
+      console.log("UserInstances initInstances", this.instances)
+    },
     createInstance() {
       console.log("createInstance clicked, userId: ", this.userId)
       // 处理创建实例的逻辑，可以使用 Vue Router 跳转到创建实例页面
-      this.$router.push(`/create/${this.userId}/${this.node.name}`);
+      this.$router.push(`/create/${this.userId}`);
     },
     enterInstance(instance: Instance) {
       // 处理进入实例的逻辑，可以使用 Vue Router 跳转到实例使用页面
@@ -39,27 +56,14 @@ export default defineComponent({
 
 <template>
   <div class="node-status" style="width: 100%;">
-    <div class="node-info">
-      <div class="node-info-left">
-        <div>
-          <h2>{{ node.name }}</h2>
-        </div>
-        <div>
-          <p v-if="node.available">节点可用</p>
-          <p v-else>节点不可用</p>
-        </div>
-      </div>
-      <div class="node-info-right">
-        <p>CPU: {{ `${node.cpuUsed}/${node.cpuTotal}` }}</p>
-        <p>内存: {{ `${node.memoryUsed.toFixed(2)}/${node.memoryTotal.toFixed(2)}` }} GB</p>
-        <p>GPU: {{ `${node.gpuUsed}/${node.gpuTotal}` }}</p>
-        <el-button class="node-info-button" @click="createInstance" size="large" type="primary">创建实例</el-button>
-      </div>
-    </div>
-
     <div class="instance-table">
-      <h3 class="instance-table-title">节点上的实例</h3>
-      <el-table :data="node.instances" border :cell-style="{textAlign: 'center', color: 'black', padding: '20px', 'font-size': 'calc(100vw * 18 / 1920)'}" :header-cell-style="{background:'#fafafa', color:'black', 'text-align': 'center', 'font-size': 'calc(100vw * 18 / 1920)', padding: '20px'}">
+      <h3 class="instance-table-title">我的实例</h3>
+      <div class="create-instance-right">
+        <el-button class="node-info-button" @click="createInstance" size="large" type="primary">创建实例</el-button>
+    </div>
+      <el-table :data="instances" border
+        :cell-style="{ textAlign: 'center', color: 'black', padding: '20px', 'font-size': 'calc(100vw * 18 / 1920)' }"
+        :header-cell-style="{ background: '#fafafa', color: 'black', 'text-align': 'center', 'font-size': 'calc(100vw * 18 / 1920)', padding: '20px' }">
         <el-table-column prop="createTime" label="创建时间"></el-table-column>
         <el-table-column prop="name" label="实例名称"></el-table-column>
         <el-table-column prop="status" label="实例状态"></el-table-column>
@@ -70,8 +74,10 @@ export default defineComponent({
         <el-table-column label="操作" min-width="150px">
           <template #default="scope">
             <div class="instance-buttons">
-              <el-button @click="enterInstance(scope.row)" type="primary" :disabled="scope.row.status !== 'Running'" size="large">进入实例</el-button>
-              <el-button @click="destroyInstance(scope.row)" type="danger" :disabled="scope.row.status === 'Terminating'" size="large">摧毁实例</el-button>
+              <el-button @click="enterInstance(scope.row)" type="primary" :disabled="scope.row.status !== 'Running'"
+                size="large">进入实例</el-button>
+              <el-button @click="destroyInstance(scope.row)" type="danger" :disabled="scope.row.status === 'Terminating'"
+                size="large">摧毁实例</el-button>
             </div>
           </template>
         </el-table-column>
@@ -97,7 +103,7 @@ export default defineComponent({
   /* font-size: calc(100vw * 25 / 1920); */
 }
 
-.instance-buttons > button {
+.instance-buttons>button {
   font-size: calc(100vw * 15 / 1920);
   width: fit-content;
 }
@@ -119,11 +125,13 @@ export default defineComponent({
   align-items: center;
 }
 
-.node-info-right {
-  width: 40%;
+.create-instance-right {
+  width: 100%;
   display: flex;
-  align-items: center;
-  justify-content: space-around;
+  align-items: flex-end;
+  justify-content: flex-end;
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
 
 .node-info-button {
@@ -132,7 +140,7 @@ export default defineComponent({
   width: fit-content;
 }
 
-.node-info-right > * {
+.node-info-right>* {
   padding: 5px;
 }
 
@@ -160,14 +168,11 @@ p {
 }
 
 :deep(.cell) {
-    overflow: visible;
+  overflow: visible;
 }
 
 /* ::v-deep {
   .el-form-item
   width: 90%;
 } */
-
-
-
 </style>

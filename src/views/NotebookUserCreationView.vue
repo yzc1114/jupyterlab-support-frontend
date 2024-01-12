@@ -1,9 +1,9 @@
 <template>
   <div class="notebook-creation" style="">
     <h1 class="creation-title">Jupyter Lab实例创建</h1>
-    <div v-if="nodeLoaded">
+    <!-- <div v-if="nodesLoaded">
       <div class="node-info">
-        <p>节点名称：{{ node.name }}</p>
+        <p>集群容量</p>
         <p>CPU: {{ node.cpuTotal }}</p>
         <p>内存: {{ node.memoryTotal.toFixed(2) }} GB</p>
         <p>GPU: {{ `${node.gpuUsed}/${node.gpuTotal}` }}</p>
@@ -11,9 +11,9 @@
     </div>
     <div v-else>
       <div class="node-info">
-        <p>节点信息加载中</p>
+        <p>集群容量加载中</p>
       </div>
-    </div>
+    </div> -->
 
     <form class="form-container">
       <el-form ref="form" :model="form" label-width="120px" size="big" label-position="top">
@@ -47,7 +47,7 @@
         </el-row>
 
         <el-form-item label="GPU" prop="gpu">
-          <el-input-number v-model="form.gpu" :step="1" :min="0" :max="node.gpuTotal - node.gpuUsed"></el-input-number>
+          <el-input-number v-model="form.gpu" :step="1" :min="0" :max="8"></el-input-number>
         </el-form-item>
       </el-form>
     </form>
@@ -73,18 +73,8 @@ export default {
   name: 'NotebookCreation',
   data() {
     return {
-      node: {
-        name: '',
-        available: false,
-        cpuUsed: 0,
-        cpuTotal: 0,
-        memoryUsed: 0,
-        memoryTotal: 0,
-        gpuUsed: 0,
-        gpuTotal: 0,
-        instances: [] as Instance[],
-      },
-      nodeLoaded: false,
+      nodes: [] as Node[],
+      nodesLoaded: false,
       form: {
         name: '',
         image: '',
@@ -101,12 +91,17 @@ export default {
     };
   },
   async mounted() {
-    await this.loadNode()
+    await this.loadNodes()
   },
   methods: {
     async createInstance(): Promise<void> {
       // 处理创建实例的逻辑
       // 跳转回实例管理页面，使用 Vue Router 的方式
+
+      // 等待this.nodesLoaded为true
+      while (!this.nodesLoaded) {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
       let succeeded = await this.doCreateInstance()
       if (succeeded) {
         this.$router.push(`/instances/${this.$route.params.userId}/`);
@@ -117,43 +112,16 @@ export default {
       // this.$router.push('/');
       this.$router.push(`/instances/${this.$route.params.userId}/`);
     },
-    async loadNode() {
-      // 加载节点信息
-      let nodeId: string | string[] = this.$route.params.nodeId
-      // assert nodeId is a single string
-      if (Array.isArray(nodeId)) {
-        nodeId = nodeId[0]
+    async loadNodes() {
+      let userId: string = this.$route.params.userId as string
+      try {
+        let nodes = await loadNodesWithInsances(userId)
+        this.nodes = nodes
+        this.nodesLoaded = true
+      } catch (error: any) {
+        console.log("error", error)
+        ElMessage.error(error);
       }
-      let nodeResponse = await getNode(nodeId)
-      if (nodeResponse.code !== 20000) {
-        ElMessage.error(nodeResponse.message);
-        return
-      }
-      let node = nodeResponse.data
-      let nodeInfo: Node = parseNode(node)
-      let namespace = import.meta.env.VITE_NAMESPACE
-      console.log("namespace", namespace)
-      let podLabels = { "app": "jupyterlab-instance" }
-      let podsResponse = await listAllPods(namespace, podLabels)
-      console.log("podsResponse", podsResponse)
-      if (podsResponse.code != 20000) {
-        ElMessage.error(podsResponse.message);
-        return
-      }
-      let pods = podsResponse.data.items
-      for (let pod of pods) {
-        if (pod.spec.nodeName != node.metadata.name) {
-          continue
-        }
-        let instance: Instance = parseInstance(pod)
-        nodeInfo.gpuUsed += instance.gpuUsage
-        // nodeInfo.instances.push(instance)
-      }
-      this.node = nodeInfo
-      // setTimeout(() => {
-      //   this.nodeLoaded = true
-      // }, 1000)
-      this.nodeLoaded = true
     },
     async loadPod(instanceName: string) {
       console.log("loadPod, instanceName: ", instanceName)
@@ -210,12 +178,27 @@ export default {
       let cpu = Number(this.form.cpu.toFixed(1)) * 1000
       let mem = Number(this.form.memory.toFixed(1)) * 1000
       let gpu = Number(this.form.gpu.toFixed(0))
-      if (this.node.gpuTotal - this.node.gpuUsed < gpu) {
-        ElMessage.error(`GPU资源不足，当前节点剩余GPU资源为 ${this.node.gpuTotal - this.node.gpuUsed}个，请重新输入`);
+      console.log("doCreateInstance, cpu: ", cpu, "mem: ", mem, "gpu: ", gpu)
+      let targetNode: Node|null = null;
+      for (let node of this.nodes) {
+        // 检查是否存在资源足够的节点
+        if (node.cpuTotal < cpu) {
+          continue
+        }
+        if (node.memoryTotal - node.memoryUsed < mem) {
+          continue
+        }
+        if (node.gpuTotal - node.gpuUsed < gpu) {
+          continue
+        }
+        targetNode = node
+      }
+      if (targetNode == null) {
+        ElMessage.error("没有足够的资源创建实例，请联系管理员");
         return false
       }
       let image = this.form.image
-      let nodeName = this.$route.params.nodeId as string
+      let nodeName = targetNode.name
       let labBaseUrl = `${import.meta.env.VITE_BASE_URL}/lab/${userId}/${instanceName}`
       console.log("createInstance", instanceName, cpu, mem, image, nodeName, userId, labBaseUrl)
       let podYaml: any = createPodYaml(instanceName, userId as string, image, cpu, mem, gpu, nodeName, labBaseUrl)
@@ -242,6 +225,9 @@ export default {
         ElMessage.error(`创建实例Ingress失败，原因：${createIngressResponse.message}`);
         return false
       }
+      ElMessage.success("创建实例成功");
+      return true
+
       ElMessage.success("创建实例成功");
       return true
     }
@@ -316,6 +302,12 @@ h2 {
   text-align: left;
   font-size: calc(100vw * 15 / 1920);
   /* font-weight: bold; */
+}
+
+.row-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .row-container {

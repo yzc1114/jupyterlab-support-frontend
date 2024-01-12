@@ -45,6 +45,7 @@ export function parseInstance(pod: any): Instance {
   }
   let instance: Instance = {
     user: pod.metadata.labels.user,
+    nodeName: pod.spec.nodeName,
     createTime: pod.metadata.creationTimestamp,
     name: pod.metadata.name,
     status: pod.status.phase,

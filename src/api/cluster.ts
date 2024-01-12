@@ -1,9 +1,54 @@
 import { k8sClient } from './index'
-
+import { parseInstance, parseNode } from '../utils/parser'
+import { convertToGB, convertCPUToCore } from '../utils/unit';
+import { type Node, type Instance } from '@/typeDefs/typeDefs';
 
 const region = "local"
 const maxLimit = 100
-const mock = false
+const mock = true
+
+export const loadNodesWithInsances = async (userId: string) => {
+    // load all information we need
+    let nodesResponse = await listAllNodes()
+    console.log("nodeResponse", nodesResponse)
+    if (nodesResponse.code != 20000) {
+        throw new Error(nodesResponse.message);
+    }
+    let nodes = nodesResponse.data.items
+    let namespace = import.meta.env.VITE_NAMESPACE
+    console.log("namespace", namespace)
+    let podLabels = { "app": "jupyterlab-instance" }
+    // "user": this.$route.params.userId
+    let podsResponse = await listAllPods(namespace, podLabels)
+    console.log("podsResponse", podsResponse)
+    if (podsResponse.code != 20000) {
+        throw new Error(podsResponse.message);
+    }
+    let pods = podsResponse.data.items
+    // update nodes
+    let resultNodes: Array<Node> = []
+    for (let node of nodes) {
+        let nodeInfo: Node = parseNode(node)
+        for (let pod of pods) {
+            if (pod.spec.nodeName != node.metadata.name) {
+                continue
+            }
+            let instance: Instance = parseInstance(pod)
+            nodeInfo.gpuUsed += instance.gpuUsage
+            nodeInfo.memoryUsed += convertToGB(instance.memoryUsage)
+            nodeInfo.cpuUsed += convertCPUToCore(instance.cpuUsage)
+            if (userId == "admin") {
+                nodeInfo.instances.push(instance)
+            } else if (instance.user == userId) {
+                nodeInfo.instances.push(instance)
+            }
+        }
+        resultNodes.push(nodeInfo)
+    }
+    resultNodes.sort(function (a, b) { return a.name.localeCompare(b.name); })
+    console.log("resultNodes", resultNodes)
+    return resultNodes
+}
 
 export const listAllNodes = async () => {
     if (mock) {
@@ -2541,7 +2586,7 @@ export const listAllServices = async (namespace: string, labels: object) => {
 }
 
 
-export const listAllCodeSnippets = async() => {
+export const listAllCodeSnippets = async () => {
     if (mock) {
         return {
             "code": 20000,

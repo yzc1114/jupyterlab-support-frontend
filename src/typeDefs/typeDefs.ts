@@ -12,12 +12,13 @@ export interface Node {
 
 export interface Instance {
     id: string;
+    nodeName: string;
     user: string;
     name: string;
     status: string;
     image: string;
-    cpuUsage: number;
-    memoryUsage: number;
+    cpuUsage: string;
+    memoryUsage: string;
     gpuUsage: number;
     createTime: string;
 }
