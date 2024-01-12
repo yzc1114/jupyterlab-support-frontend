@@ -64,8 +64,8 @@ export default defineComponent({
         <el-table-column prop="name" label="实例名称"></el-table-column>
         <el-table-column prop="status" label="实例状态"></el-table-column>
         <el-table-column prop="image" label="镜像名称"></el-table-column>
-        <el-table-column prop="cpuUsage" label="CPU占用量"></el-table-column>
-        <el-table-column prop="memoryUsage" label="内存占用量"></el-table-column>
+        <el-table-column prop="cpuUsage" label="CPU占用量(核)"></el-table-column>
+        <el-table-column prop="memoryUsage" label="内存占用量(GB)"></el-table-column>
         <el-table-column prop="gpuUsage" label="GPU占用量"></el-table-column>
         <el-table-column label="操作" min-width="150px">
           <template #default="scope">
