@@ -49,8 +49,8 @@
                         <div :key="satelliteName" class="button-group-wrapper">
                             <div class="button-group-label">{{ satelliteName }}</div>
                             <el-button-group class="button-group">
-                                <el-button v-for="(sensorEnabled, sensorName, index) in satelliteSensors" :key="sensorName" class="button-group-item"
-                                    :type="sensorEnabled ? 'primary' : ''"
+                                <el-button v-for="(sensorEnabled, sensorName, index) in satelliteSensors" :key="sensorName"
+                                    class="button-group-item" :type="sensorEnabled ? 'primary' : ''"
                                     @click="dataSearchModel.satellites[satelliteName][sensorName] = !(sensorEnabled as boolean)">
                                     {{ sensorName }}
                                 </el-button>
@@ -85,17 +85,17 @@
                     </template>
                 </el-table-column>
 
-                <el-table-column prop="name" label="名称" />
+                <el-table-column prop="fileUrl" label="名称" :formatter="nameFormatter" />
+                <el-table-column label="缩略图">
+                    <template #default="{ row }">
+                        <img :src="row.thumbUrl" alt="" style="width: 20px; height: 20px;">
+                    </template>
+                </el-table-column>
                 <el-table-column prop="satelliteId" label="卫星" min-width="80" />
                 <el-table-column prop="sensorId" label="传感器" min-width="80" />
                 <el-table-column prop="receiveTime" label="接收时间" min-width="150" />
                 <el-table-column prop="cloudPercent" label="云量" min-width="80" />
                 <el-table-column prop="sources" label="来源" min-width="200" />
-                <el-table-column label="缩略图">
-                    <template #default="{ row }">
-                        <img :src="row.thumbUrl" alt="" style="width: 100px; height: 100px;">
-                    </template>
-                </el-table-column>
             </el-table>
         </div>
 
@@ -119,6 +119,7 @@ import { type Node, type Instance } from '@/typeDefs/typeDefs'; // 假设有定�
 import { type DataRequestParams, type DataResponse, type SatelliteImage, type Satellite, getDataList } from '@/api/data'
 import { ElMessage } from 'element-plus'; // 引入 Element Plus 组件库中的 Message 组件
 import SampleTable from '@/components/SampleTable.vue'
+import type { TableColumnCtx } from 'element-plus'
 import { copyToClipboard } from '@/utils/clipboard'
 import {
     provinceAndCityData,
@@ -127,7 +128,6 @@ import {
     pcaTextArr,
     codeToText,
 } from "element-china-area-data";
-
 
 var defaultDataSearchParams = {
     satelliteSensorImageModeList: [],
@@ -198,6 +198,12 @@ export default defineComponent({
                 total: 0,
                 currentPage: 1,
                 pageSize: 10,
+            },
+            nameFormatter: (row: SatelliteImage, column: TableColumnCtx<SatelliteImage>) => {
+                let fileUrl = row.fileUrl;
+                // get base name
+                let baseName = fileUrl.split("/").pop();
+                return baseName;
             }
         };
     },

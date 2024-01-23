@@ -38,12 +38,17 @@ export default defineComponent({
     createInstance() {
       console.log("createInstance clicked, userId: ", this.userId)
       // 处理创建实例的逻辑，可以使用 Vue Router 跳转到创建实例页面
-      this.$router.push(`/create/${this.userId}`);
+      // this.$router.push(`/create/${this.userId}`);
+      this.$emit('create', null);
     },
     enterInstance(instance: Instance) {
       // 处理进入实例的逻辑，可以使用 Vue Router 跳转到实例使用页面
       console.log("enterInstance clicked, userId: ", this.userId, "instance: ", instance.name)
-      this.$router.push(`/instance/${this.userId}/${instance.name}`);
+      this.$router.push(`/instance/${instance.user}/${instance.name}`);
+    },
+    editInstance(instance: Instance) {
+      console.log("editInstance clicked, userId: ", this.userId, "instance: ", instance.name)
+      this.$emit('edit', instance.name);
     },
     destroyInstance(instance: Instance) {
       // 处理摧毁实例的逻辑
@@ -75,9 +80,10 @@ export default defineComponent({
           <template #default="scope">
             <div class="instance-buttons">
               <el-button @click="enterInstance(scope.row)" type="primary" :disabled="scope.row.status !== 'Running'"
-                size="large">进入实例</el-button>
+                size="default">进入实例</el-button>
+                <el-button @click="editInstance(scope.row)" type="default" :disabled="scope.row.status !== 'Running'" size="default">编辑实例</el-button>
               <el-button @click="destroyInstance(scope.row)" type="danger" :disabled="scope.row.status === 'Terminating'"
-                size="large">摧毁实例</el-button>
+                size="default">摧毁实例</el-button>
             </div>
           </template>
         </el-table-column>

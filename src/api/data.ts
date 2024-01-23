@@ -9,6 +9,7 @@ export interface Satellite {
 
 export interface SatelliteImage {
     name: string;
+    fileUrl: string;
     satelliteId: string;
     sensorId: string;
     receiveTime: string;
@@ -82,6 +83,7 @@ export const getDataList = async (params: DataRequestParams): Promise<DataRespon
                     {
                         "name": "GF7_DLC_E116.2_N40.0_20230602_L1A0001163669.tar.gz",
                         "satelliteId": "GF7",
+                        "fileUrl": "/group1/M00/C8/4A/ChBQDGR6TqiAPvGjAACe_IyxNks587.tif",
                         "sensorId": "DLC",
                         "receiveTime": "2023-06-02 08:00:00",
                         "sceneId": "1103856",
@@ -102,6 +104,7 @@ export const getDataList = async (params: DataRequestParams): Promise<DataRespon
                     },
                     {
                         "name": "GF1_PMS2_E115.3_N39.9_20230523_L1A0007296153.tar.gz",
+                        "fileUrl": "/group1/M00/C8/4A/ChBQDGR6TqiAPvGjAACe_IyxNks587.tif",
                         "satelliteId": "GF1",
                         "sensorId": "PMS2",
                         "receiveTime": "2023-05-23 10:59:02",
@@ -123,6 +126,7 @@ export const getDataList = async (params: DataRequestParams): Promise<DataRespon
                     },
                     {
                         "name": "GF1_PMS2_E115.4_N40.2_20230523_L1A0007296155.tar.gz",
+                        "fileUrl": "/group1/M00/C8/4A/ChBQDGR6TqiAPvGjAACe_IyxNks587.tif",
                         "satelliteId": "GF1",
                         "sensorId": "PMS2",
                         "receiveTime": "2023-05-23 10:58:58",
@@ -144,6 +148,7 @@ export const getDataList = async (params: DataRequestParams): Promise<DataRespon
                     },
                     {
                         "name": "GF2_PMS1_E116.4_N39.9_20230522_L1A0007293703.tar.gz",
+                        "fileUrl": "/group1/M00/C8/4A/ChBQDGR6TqiAPvGjAACe_IyxNks587.tif",
                         "satelliteId": "GF2",
                         "sensorId": "PMS1",
                         "receiveTime": "2023-05-22 10:14:51",
@@ -165,6 +170,7 @@ export const getDataList = async (params: DataRequestParams): Promise<DataRespon
                     },
                     {
                         "name": "GF2_PMS1_E116.4_N40.1_20230522_L1A0007293608.tar.gz",
+                        "fileUrl": "/group1/M00/C8/4A/ChBQDGR6TqiAPvGjAACe_IyxNks587.tif",
                         "satelliteId": "GF2",
                         "sensorId": "PMS1",
                         "receiveTime": "2023-05-22 10:14:48",
@@ -186,6 +192,7 @@ export const getDataList = async (params: DataRequestParams): Promise<DataRespon
                     },
                     {
                         "name": "GF6_PMS_E116.9_N39.3_20230426_L1A1420311841.tar.gz",
+                        "fileUrl": "/group1/M00/C8/4A/ChBQDGR6TqiAPvGjAACe_IyxNks587.tif",
                         "satelliteId": "GF6",
                         "sensorId": "PMS",
                         "receiveTime": "2023-04-26 11:24:04",
@@ -207,6 +214,7 @@ export const getDataList = async (params: DataRequestParams): Promise<DataRespon
                     },
                     {
                         "name": "GF6_PMS_E117.0_N39.7_20230426_L1A1420312360.tar.gz",
+                        "fileUrl": "/group1/M00/C8/4A/ChBQDGR6TqiAPvGjAACe_IyxNks587.tif",
                         "satelliteId": "GF6",
                         "sensorId": "PMS",
                         "receiveTime": "2023-04-26 11:23:58",
@@ -228,6 +236,7 @@ export const getDataList = async (params: DataRequestParams): Promise<DataRespon
                     },
                     {
                         "name": "GF6_PMS_E117.2_N40.2_20230426_L1A1420312363.tar.gz",
+                        "fileUrl": "/group1/M00/C8/4A/ChBQDGR6TqiAPvGjAACe_IyxNks587.tif",
                         "satelliteId": "GF6",
                         "sensorId": "PMS",
                         "receiveTime": "2023-04-26 11:23:48",
@@ -249,6 +258,7 @@ export const getDataList = async (params: DataRequestParams): Promise<DataRespon
                     },
                     {
                         "name": "GF6_PMS_E117.4_N41.0_20230426_L1A1420312367.tar.gz",
+                        "fileUrl": "/group1/M00/C8/4A/ChBQDGR6TqiAPvGjAACe_IyxNks587.tif",
                         "satelliteId": "GF6",
                         "sensorId": "PMS",
                         "receiveTime": "2023-04-26 11:23:36",
@@ -270,6 +280,7 @@ export const getDataList = async (params: DataRequestParams): Promise<DataRespon
                     },
                     {
                         "name": "GF6_WFV_E117.8_N42.5_20230426_L1A1420311771.tar.gz",
+                        "fileUrl": "/group1/M00/C8/4A/ChBQDGR6TqiAPvGjAACe_IyxNks587.tif",
                         "satelliteId": "GF6",
                         "sensorId": "WFV",
                         "receiveTime": "2023-04-26 11:23:13",

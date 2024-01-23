@@ -5,7 +5,7 @@ import { type Node, type Instance } from '@/typeDefs/typeDefs';
 
 const region = "local"
 const maxLimit = 100
-const mock = false
+const mock = true
 
 export const loadNodesWithInsances = async (userId: string) => {
     // load all information we need
@@ -14,7 +14,10 @@ export const loadNodesWithInsances = async (userId: string) => {
     if (nodesResponse.code != 20000) {
         throw new Error(nodesResponse.message);
     }
-    let nodes = nodesResponse.data.items
+    let nodeWhiteList = ["10.1.75.10", "10.1.75.11", "10.1.75.12", "10.1.75.14", "10.1.75.15", "10.1.75.16", "10.1.75.17", "10.1.75.18", "10.1.75.33", "10.1.75.34", "ecs-2503"]
+    let nodes: any[] = nodesResponse.data.items // Explicitly define the type of "nodes" as "any[]"
+    // filter nodes
+    nodes = nodes.filter((node: any) => nodeWhiteList.includes(node.metadata.name))
     let namespace = import.meta.env.VITE_NAMESPACE
     console.log("namespace", namespace)
     let podLabels = { "app": "jupyterlab-instance" }
@@ -974,6 +977,343 @@ export const listAllPods = async (namespace: string, labels: object) => {
     }
     let page = 1
     return listResources("Pod", page, maxLimit, namespace, labels)
+}
+
+export const listAllDeploys = async (namespace: string, labels: object) => {
+    if (mock) {
+        return {
+            "code": 20000,
+            "message": null,
+            "exId": 0,
+            "data": {
+                "apiVersion": "apps/v1",
+                "kind": "DeploymentList",
+                "metadata": {
+                    "name": "get-deployments",
+                    "totalCount": 1,
+                    "currentPage": 1,
+                    "totalPage": 1,
+                    "itemsPerPage": 100,
+                    "conditions": "{\"metadata##namespace\":\"jupyterlab-management\",\"metadata##labels##app\":\"jupyterlab-instance\"}"
+                },
+                "items": [
+                    {
+                        "kind": "Deployment",
+                        "apiVersion": "apps/v1",
+                        "metadata": {
+                            "name": "instance-test-6-1717008369266900994",
+                            "namespace": "jupyterlab-management",
+                            "uid": "3bcbb0b2-b813-4b8f-b3a1-cd04d29a1559",
+                            "resourceVersion": "49152518",
+                            "generation": 1,
+                            "creationTimestamp": "2024-01-23T06:58:50Z",
+                            "labels": {
+                                "app": "jupyterlab-instance",
+                                "name": "instance-test-6-1717008369266900994",
+                                "user": "1717008369266900994"
+                            },
+                            "annotations": {
+                                "deployment.kubernetes.io/revision": "1"
+                            },
+                            "managedFields": [
+                                {
+                                    "manager": "Apache-HttpClient",
+                                    "operation": "Update",
+                                    "apiVersion": "apps/v1",
+                                    "time": "2024-01-23T06:58:50Z",
+                                    "fieldsType": "FieldsV1",
+                                    "fieldsV1": {
+                                        "f:metadata": {
+                                            "f:labels": {
+                                                ".": {},
+                                                "f:app": {},
+                                                "f:name": {},
+                                                "f:user": {}
+                                            }
+                                        },
+                                        "f:spec": {
+                                            "f:progressDeadlineSeconds": {},
+                                            "f:replicas": {},
+                                            "f:revisionHistoryLimit": {},
+                                            "f:selector": {},
+                                            "f:strategy": {
+                                                "f:rollingUpdate": {
+                                                    ".": {},
+                                                    "f:maxSurge": {},
+                                                    "f:maxUnavailable": {}
+                                                },
+                                                "f:type": {}
+                                            },
+                                            "f:template": {
+                                                "f:metadata": {
+                                                    "f:labels": {
+                                                        ".": {},
+                                                        "f:app": {},
+                                                        "f:name": {},
+                                                        "f:user": {}
+                                                    }
+                                                },
+                                                "f:spec": {
+                                                    "f:containers": {
+                                                        "k:{\"name\":\"instance-test-6-1717008369266900994\"}": {
+                                                            ".": {},
+                                                            "f:command": {},
+                                                            "f:env": {
+                                                                ".": {},
+                                                                "k:{\"name\":\"GRANT_SUDO\"}": {
+                                                                    ".": {},
+                                                                    "f:name": {},
+                                                                    "f:value": {}
+                                                                }
+                                                            },
+                                                            "f:image": {},
+                                                            "f:imagePullPolicy": {},
+                                                            "f:name": {},
+                                                            "f:ports": {
+                                                                ".": {},
+                                                                "k:{\"containerPort\":8888,\"protocol\":\"TCP\"}": {
+                                                                    ".": {},
+                                                                    "f:containerPort": {},
+                                                                    "f:protocol": {}
+                                                                }
+                                                            },
+                                                            "f:resources": {
+                                                                ".": {},
+                                                                "f:limits": {
+                                                                    ".": {},
+                                                                    "f:cpu": {},
+                                                                    "f:memory": {}
+                                                                }
+                                                            },
+                                                            "f:terminationMessagePath": {},
+                                                            "f:terminationMessagePolicy": {},
+                                                            "f:volumeMounts": {
+                                                                ".": {},
+                                                                "k:{\"mountPath\":\"/data\"}": {
+                                                                    ".": {},
+                                                                    "f:mountPath": {},
+                                                                    "f:name": {}
+                                                                },
+                                                                "k:{\"mountPath\":\"/mnt\"}": {
+                                                                    ".": {},
+                                                                    "f:mountPath": {},
+                                                                    "f:name": {}
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "f:dnsPolicy": {},
+                                                    "f:nodeName": {},
+                                                    "f:restartPolicy": {},
+                                                    "f:schedulerName": {},
+                                                    "f:securityContext": {
+                                                        ".": {},
+                                                        "f:fsGroup": {},
+                                                        "f:runAsUser": {}
+                                                    },
+                                                    "f:terminationGracePeriodSeconds": {},
+                                                    "f:volumes": {
+                                                        ".": {},
+                                                        "k:{\"name\":\"data-samples-volume\"}": {
+                                                            ".": {},
+                                                            "f:hostPath": {
+                                                                ".": {},
+                                                                "f:path": {},
+                                                                "f:type": {}
+                                                            },
+                                                            "f:name": {}
+                                                        },
+                                                        "k:{\"name\":\"nfs-data-volume\"}": {
+                                                            ".": {},
+                                                            "f:hostPath": {
+                                                                ".": {},
+                                                                "f:path": {},
+                                                                "f:type": {}
+                                                            },
+                                                            "f:name": {}
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "manager": "kube-controller-manager",
+                                    "operation": "Update",
+                                    "apiVersion": "apps/v1",
+                                    "time": "2024-01-23T07:13:43Z",
+                                    "fieldsType": "FieldsV1",
+                                    "fieldsV1": {
+                                        "f:metadata": {
+                                            "f:annotations": {
+                                                ".": {},
+                                                "f:deployment.kubernetes.io/revision": {}
+                                            }
+                                        },
+                                        "f:status": {
+                                            "f:availableReplicas": {},
+                                            "f:conditions": {
+                                                ".": {},
+                                                "k:{\"type\":\"Available\"}": {
+                                                    ".": {},
+                                                    "f:lastTransitionTime": {},
+                                                    "f:lastUpdateTime": {},
+                                                    "f:message": {},
+                                                    "f:reason": {},
+                                                    "f:status": {},
+                                                    "f:type": {}
+                                                },
+                                                "k:{\"type\":\"Progressing\"}": {
+                                                    ".": {},
+                                                    "f:lastTransitionTime": {},
+                                                    "f:lastUpdateTime": {},
+                                                    "f:message": {},
+                                                    "f:reason": {},
+                                                    "f:status": {},
+                                                    "f:type": {}
+                                                }
+                                            },
+                                            "f:observedGeneration": {},
+                                            "f:readyReplicas": {},
+                                            "f:replicas": {},
+                                            "f:updatedReplicas": {}
+                                        }
+                                    },
+                                    "subresource": "status"
+                                }
+                            ]
+                        },
+                        "spec": {
+                            "replicas": 1,
+                            "selector": {
+                                "matchLabels": {
+                                    "app": "jupyterlab-instance",
+                                    "name": "instance-test-6-1717008369266900994",
+                                    "user": "1717008369266900994"
+                                }
+                            },
+                            "template": {
+                                "metadata": {
+                                    "creationTimestamp": null,
+                                    "labels": {
+                                        "app": "jupyterlab-instance",
+                                        "name": "instance-test-6-1717008369266900994",
+                                        "user": "1717008369266900994"
+                                    }
+                                },
+                                "spec": {
+                                    "volumes": [
+                                        {
+                                            "name": "nfs-data-volume",
+                                            "hostPath": {
+                                                "path": "/data",
+                                                "type": ""
+                                            }
+                                        },
+                                        {
+                                            "name": "data-samples-volume",
+                                            "hostPath": {
+                                                "path": "/mnt",
+                                                "type": ""
+                                            }
+                                        }
+                                    ],
+                                    "containers": [
+                                        {
+                                            "name": "instance-test-6-1717008369266900994",
+                                            "image": "jupyter/minimal-notebook:lab-4.0.2",
+                                            "command": [
+                                                "/bin/bash",
+                                                "-c",
+                                                "jupyter lab --generate-config &&\ncat > ~/.jupyter/jupyter_lab_config.py << EOF\nc.ServerApp.tornado_settings = {\n'headers': {\n'Content-Security-Policy': \"frame-ancestors 'self' *;\",\n}\n}\nc.ServerApp.token = ''\nc.ServerApp.base_url = '/aiDesigner/lab/1717008369266900994/instance-test-3-1717008369266900994'\nc.ServerApp.password = ''\nc.ServerApp.disable_check_xsrf = True\nEOF\nstart.sh jupyter lab --ip='0.0.0.0' --ServerApp.allow_root=True --port 8888 --no-browser"
+                                            ],
+                                            "ports": [
+                                                {
+                                                    "containerPort": 8888,
+                                                    "protocol": "TCP"
+                                                }
+                                            ],
+                                            "env": [
+                                                {
+                                                    "name": "GRANT_SUDO",
+                                                    "value": "yes"
+                                                }
+                                            ],
+                                            "resources": {
+                                                "limits": {
+                                                    "cpu": "100m",
+                                                    "memory": "100Mi"
+                                                }
+                                            },
+                                            "volumeMounts": [
+                                                {
+                                                    "name": "nfs-data-volume",
+                                                    "mountPath": "/data"
+                                                },
+                                                {
+                                                    "name": "data-samples-volume",
+                                                    "mountPath": "/mnt"
+                                                }
+                                            ],
+                                            "terminationMessagePath": "/dev/termination-log",
+                                            "terminationMessagePolicy": "File",
+                                            "imagePullPolicy": "IfNotPresent"
+                                        }
+                                    ],
+                                    "restartPolicy": "Always",
+                                    "terminationGracePeriodSeconds": 30,
+                                    "dnsPolicy": "ClusterFirst",
+                                    "nodeName": "10.1.75.34",
+                                    "securityContext": {
+                                        "runAsUser": 0,
+                                        "fsGroup": 0
+                                    },
+                                    "schedulerName": "default-scheduler"
+                                }
+                            },
+                            "strategy": {
+                                "type": "RollingUpdate",
+                                "rollingUpdate": {
+                                    "maxUnavailable": "25%",
+                                    "maxSurge": "25%"
+                                }
+                            },
+                            "revisionHistoryLimit": 10,
+                            "progressDeadlineSeconds": 600
+                        },
+                        "status": {
+                            "observedGeneration": 1,
+                            "replicas": 1,
+                            "updatedReplicas": 1,
+                            "readyReplicas": 1,
+                            "availableReplicas": 1,
+                            "conditions": [
+                                {
+                                    "type": "Progressing",
+                                    "status": "True",
+                                    "lastUpdateTime": "2024-01-23T06:58:53Z",
+                                    "lastTransitionTime": "2024-01-23T06:58:50Z",
+                                    "reason": "NewReplicaSetAvailable",
+                                    "message": "ReplicaSet \"instance-test-6-1717008369266900994-7994dd9bc5\" has successfully progressed."
+                                },
+                                {
+                                    "type": "Available",
+                                    "status": "True",
+                                    "lastUpdateTime": "2024-01-23T07:13:43Z",
+                                    "lastTransitionTime": "2024-01-23T07:13:43Z",
+                                    "reason": "MinimumReplicasAvailable",
+                                    "message": "Deployment has minimum availability."
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    }
+    let page = 1
+    return listResources("apps.Deployment", page, maxLimit, namespace, labels)
 }
 
 export const listAllServices = async (namespace: string, labels: object) => {
@@ -3369,9 +3709,13 @@ export const getNode = async (name: string) => {
     return getResource("Node", name, "default", {})
 }
 
-export const getPod = async (name: string, namespace: string, labels: object) => {
-    return getResource("Pod", name, namespace, labels)
-}
+// export const getPod = async (name: string, namespace: string, labels: object) => {
+//     return getResource("Pod", name, namespace, labels)
+// }
+
+// export const getDeploy = async (name: string, namespace: string, labels: object) => {
+//     return getResource("apps.Deployment", name, namespace, labels)
+// }
 
 export const listResources = async (fullkind: string, page: number, limit: number, namespace: string | null, labels: any) => {
     let queryLabels: any = {}
@@ -3595,6 +3939,185 @@ export const createResource = async (yaml: any) => {
         "data": yaml
     }
     const response = await k8sClient.post('/kubesys/kube/createResource', requestData);
+    return response.data;
+}
+
+export const updateResource = async (yaml: any) => {
+    if (mock) {
+        return {
+            "code": 20000,
+            "message": null,
+            "exId": 0,
+            "data": {
+                "kind": "Pod",
+                "apiVersion": "v1",
+                "metadata": {
+                    "name": "busybox-pod2",
+                    "namespace": "default",
+                    "uid": "779ab2b1-c59c-4736-9b91-61d965cf8048",
+                    "resourceVersion": "6502465",
+                    "creationTimestamp": "2023-07-22T08:44:52Z",
+                    "labels": {
+                        "app": "busybox"
+                    },
+                    "managedFields": [
+                        {
+                            "manager": "Apache-HttpClient",
+                            "operation": "Update",
+                            "apiVersion": "v1",
+                            "time": "2023-07-22T08:44:52Z",
+                            "fieldsType": "FieldsV1",
+                            "fieldsV1": {
+                                "f:metadata": {
+                                    "f:labels": {
+                                        ".": {},
+                                        "f:app": {}
+                                    }
+                                },
+                                "f:spec": {
+                                    "f:containers": {
+                                        "k:{\"name\":\"busybox-container\"}": {
+                                            ".": {},
+                                            "f:command": {},
+                                            "f:image": {},
+                                            "f:imagePullPolicy": {},
+                                            "f:name": {},
+                                            "f:resources": {
+                                                ".": {},
+                                                "f:limits": {
+                                                    ".": {},
+                                                    "f:cpu": {},
+                                                    "f:memory": {}
+                                                },
+                                                "f:requests": {
+                                                    ".": {},
+                                                    "f:cpu": {},
+                                                    "f:memory": {}
+                                                }
+                                            },
+                                            "f:terminationMessagePath": {},
+                                            "f:terminationMessagePolicy": {}
+                                        }
+                                    },
+                                    "f:dnsPolicy": {},
+                                    "f:enableServiceLinks": {},
+                                    "f:restartPolicy": {},
+                                    "f:schedulerName": {},
+                                    "f:securityContext": {},
+                                    "f:terminationGracePeriodSeconds": {}
+                                }
+                            }
+                        }
+                    ]
+                },
+                "spec": {
+                    "volumes": [
+                        {
+                            "name": "kube-api-access-wngjk",
+                            "projected": {
+                                "sources": [
+                                    {
+                                        "serviceAccountToken": {
+                                            "expirationSeconds": 3607,
+                                            "path": "token"
+                                        }
+                                    },
+                                    {
+                                        "configMap": {
+                                            "name": "kube-root-ca.crt",
+                                            "items": [
+                                                {
+                                                    "key": "ca.crt",
+                                                    "path": "ca.crt"
+                                                }
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "downwardAPI": {
+                                            "items": [
+                                                {
+                                                    "path": "namespace",
+                                                    "fieldRef": {
+                                                        "apiVersion": "v1",
+                                                        "fieldPath": "metadata.namespace"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ],
+                                "defaultMode": 420
+                            }
+                        }
+                    ],
+                    "containers": [
+                        {
+                            "name": "busybox-container",
+                            "image": "busybox",
+                            "command": [
+                                "sleep",
+                                "3600"
+                            ],
+                            "resources": {
+                                "limits": {
+                                    "cpu": "500m",
+                                    "memory": "256Mi"
+                                },
+                                "requests": {
+                                    "cpu": "500m",
+                                    "memory": "256Mi"
+                                }
+                            },
+                            "volumeMounts": [
+                                {
+                                    "name": "kube-api-access-wngjk",
+                                    "readOnly": true,
+                                    "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount"
+                                }
+                            ],
+                            "terminationMessagePath": "/dev/termination-log",
+                            "terminationMessagePolicy": "File",
+                            "imagePullPolicy": "Always"
+                        }
+                    ],
+                    "restartPolicy": "Always",
+                    "terminationGracePeriodSeconds": 30,
+                    "dnsPolicy": "ClusterFirst",
+                    "serviceAccountName": "default",
+                    "serviceAccount": "default",
+                    "securityContext": {},
+                    "schedulerName": "default-scheduler",
+                    "tolerations": [
+                        {
+                            "key": "node.kubernetes.io/not-ready",
+                            "operator": "Exists",
+                            "effect": "NoExecute",
+                            "tolerationSeconds": 300
+                        },
+                        {
+                            "key": "node.kubernetes.io/unreachable",
+                            "operator": "Exists",
+                            "effect": "NoExecute",
+                            "tolerationSeconds": 300
+                        }
+                    ],
+                    "priority": 0,
+                    "enableServiceLinks": true,
+                    "preemptionPolicy": "PreemptLowerPriority"
+                },
+                "status": {
+                    "phase": "Pending",
+                    "qosClass": "Guaranteed"
+                }
+            }
+        }
+    }
+    const requestData = {
+        "region": region,
+        "data": yaml
+    }
+    const response = await k8sClient.post('/kubesys/kube/updateResource', requestData);
     return response.data;
 }
 

@@ -69,23 +69,6 @@ export default defineComponent({
       userId: "",
       instanceName: "",
       instanceServiceUrl: "",
-      // activeTab: '', // Active tab (userSample or platformSample)
-      // userSampleSearchParams: {
-      //   pageSize: 10,
-      //   pageNum: 1,
-      //   sampleSetName: '',
-      //   type: '',
-      //   // Add other parameters as needed
-      // },
-      // userSampleSearchResult: null, // Holds the user sample search result
-      // platformSampleSearchParams: {
-      //   pageSize: 10,
-      //   pageNum: 1,
-      //   sampleSetName: '',
-      //   type: '',
-      //   // Add other parameters as needed
-      // },
-      // platformSampleSearchResult: null, // Holds the platform sample search result
       iframeCSS: {
         jupyterlab: 'jupyterlab-without-sidetab',
         sideTab: 'side-tab',
@@ -112,27 +95,9 @@ export default defineComponent({
   methods: {
     showingTabButton(tabName: string) {
       console.log("showingTabButton", this.showSideTab, tabName, this.showSideTab == tabName)
-      return this.showSideTab == tabName ? 'primary' : 'normal'
+      return this.showSideTab == tabName ? 'primary' : 'default'
     },
     async loadService() {
-      // console.log("loadService, instanceName: ", this.instanceName)
-      // let svcName = `${this.instanceName}-svc`
-      // let svcLabels = { "app": "jupyterlab-instance", "name": svcName }
-      // let response = await getService(svcName, import.meta.env.VITE_NAMESPACE, svcLabels)
-      // console.log("loadService, response: ", response)
-      // if (response == null) {
-      //   ElMessage.error("获取服务失败！")
-      //   return
-      // }
-      // if (response.code != 20000) {
-      //   ElMessage.error('获取服务失败！原因：' + response.message);
-      //   return
-      // }
-      // let path = getLabBaseUrl(import.meta.env.VITE_BASE_URL, this.userId, this.instanceName)
-      // let nodePort = response.data.spec.ports[0].nodePort
-      // let url = `http://${import.meta.env.VITE_K8S_IP}:${nodePort}${path}`
-      // this.instanceServiceUrl = url
-      // console.log("loadService, instanceServiceUrl: ", this.instanceServiceUrl)
       let path = getLabBaseUrl(import.meta.env.VITE_BASE_URL, this.userId, this.instanceName)
       this.instanceServiceUrl = path
     },

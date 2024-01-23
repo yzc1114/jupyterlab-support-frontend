@@ -29,7 +29,7 @@ export function createPodYaml(instanceName: string, userId: string, image: strin
                     "command": [
                         "/bin/bash",
                         "-c",
-                        `jupyter lab --generate-config &&\ncat > ~/.jupyter/jupyter_lab_config.py << EOF\nc.ServerApp.tornado_settings = {\n'headers': {\n'Content-Security-Policy': \"frame-ancestors 'self' *;\",\n}\n}\nc.ServerApp.token = ''\nc.ServerApp.base_url = '${labBaseUrl}'\nc.ServerApp.password = ''\nc.ServerApp.disable_check_xsrf = True\nEOF\nstart.sh jupyter lab --ip='0.0.0.0' --ServerApp.allow_root=True --port 8888 --no-browser`
+                        `jupyter lab --generate-config && jupyter labextension disable @jupyterlab/docmanager-extension:download && jupyter labextension disable @jupyterlab/filebrowser-extension:download &&\ncat > ~/.jupyter/jupyter_lab_config.py << EOF\nc.ServerApp.tornado_settings = {\n'headers': {\n'Content-Security-Policy': \"frame-ancestors 'self' *;\",\n}\n}\nc.ServerApp.token = ''\nc.ServerApp.base_url = '${labBaseUrl}'\nc.ServerApp.password = ''\nc.ServerApp.disable_check_xsrf = True\nEOF\nstart.sh jupyter lab --ip='0.0.0.0' --ServerApp.allow_root=True --port 8888 --no-browser`
                     ],
                     "resources": {
                         "requests": {
@@ -79,6 +79,107 @@ export function createPodYaml(instanceName: string, userId: string, image: strin
         }
     }
     return podYaml
+}
+
+export function createDeployYaml(instanceName: string, userId: string, image: string, cpu: number, mem: number, gpu: number, nodeName: string, labBaseUrl: string) {
+    let deployYaml: any = {
+        "apiVersion": "apps/v1",
+        "kind": "Deployment",
+        "metadata": {
+            "namespace": "jupyterlab-management",
+            "name": instanceName,
+            "labels": {
+                "app": "jupyterlab-instance",
+                "name": instanceName,
+                "user": userId
+            }
+        },
+        "spec": {
+            "selector": {
+                "matchLabels": {
+                    "app": "jupyterlab-instance",
+                    "name": instanceName,
+                    "user": userId
+                }
+            },
+            "template": {
+                "metadata": {
+                    "labels": {
+                        "app": "jupyterlab-instance",
+                        "name": instanceName,
+                        "user": userId
+                    }
+                },
+                "spec": {
+                    "securityContext": {
+                        "runAsUser": 0,
+                        "fsGroup": 0
+                    },
+                    "containers": [
+                        {
+                            "name": "instance-test-6-1717008369266900994",
+                            "image": "jupyter/minimal-notebook:lab-4.0.2",
+                            "imagePullPolicy": "IfNotPresent",
+                            "ports": [
+                                {
+                                    "containerPort": 8888
+                                }
+                            ],
+                            "command": [
+                                "/bin/bash",
+                                "-c",
+                                `jupyter lab --generate-config && jupyter labextension disable @jupyterlab/docmanager-extension:download && jupyter labextension disable @jupyterlab/filebrowser-extension:download &&\ncat > ~/.jupyter/jupyter_lab_config.py << EOF\nc.ServerApp.tornado_settings = {\n'headers': {\n'Content-Security-Policy': \"frame-ancestors 'self' *;\",\n}\n}\nc.ServerApp.token = ''\nc.ServerApp.base_url = '${labBaseUrl}'\nc.ServerApp.password = ''\nc.ServerApp.disable_check_xsrf = True\nEOF\nstart.sh jupyter lab --ip='0.0.0.0' --ServerApp.allow_root=True --port 8888 --no-browser`
+                            ],
+                            "resources": {
+                                "requests": {
+                                    "memory": `${mem}Mi`,
+                                    "cpu": `${cpu}m`,
+                                }
+                            },
+                            "env": [
+                                {
+                                    "name": "GRANT_SUDO",
+                                    "value": "yes"
+                                }
+                            ],
+                            "volumeMounts": [
+                                {
+                                    "name": "nfs-data-volume",
+                                    "mountPath": "/data"
+                                },
+                                {
+                                    "name": "data-samples-volume",
+                                    "mountPath": "/mnt"
+                                }
+                            ]
+                        }
+                    ],
+                    "volumes": [
+                        {
+                            "name": "nfs-data-volume",
+                            "hostPath": {
+                                "path": "/data"
+                            }
+                        },
+                        {
+                            "name": "data-samples-volume",
+                            "hostPath": {
+                                "path": "/mnt"
+                            }
+                        }
+                    ],
+                    "nodeName": nodeName,
+                    "restartPolicy": "Always"
+                }
+            }
+        }
+    }
+    if (gpu > 0) {
+        deployYaml.spec.template.spec.containers[0].resources["limits"] = {
+            "nvidia.com/gpu": `${gpu}`,
+        }
+    }
+    return deployYaml
 }
 
 export function createServiceYaml(instanceName: string, userId: string) {
