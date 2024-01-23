@@ -44,7 +44,13 @@ export default defineComponent({
     enterInstance(instance: Instance) {
       // 处理进入实例的逻辑，可以使用 Vue Router 跳转到实例使用页面
       console.log("enterInstance clicked, userId: ", this.userId, "instance: ", instance.name)
-      this.$router.push(`/instance/${instance.user}/${instance.name}`);
+      // this.$router.push(`/instance/${instance.user}/${instance.name}`);
+      this.$router.push({
+        path:`/instance/${instance.user}/${instance.name}`,
+        query: {
+          userType: "user"
+        }
+      })
     },
     editInstance(instance: Instance) {
       console.log("editInstance clicked, userId: ", this.userId, "instance: ", instance.name)

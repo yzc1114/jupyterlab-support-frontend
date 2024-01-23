@@ -102,7 +102,11 @@ export default defineComponent({
       this.instanceServiceUrl = path
     },
     returnManagement() {
-      this.$router.push(`/instances/${this.$route.params.userId}/`);
+      if (this.$route.query.userType == "admin") {
+        this.$router.push(`/instances/admin/`);
+      } else {
+        this.$router.push(`/instances/${this.$route.params.userId}/`);
+      }
     },
     sideTabActivate(sideTab: 'SampleSearch'|'DataSearch'|'CodeSnippet'|'CodeRepo') {
       this.showSideTab = sideTab
