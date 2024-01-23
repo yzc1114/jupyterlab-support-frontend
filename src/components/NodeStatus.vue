@@ -26,11 +26,10 @@ export default defineComponent({
     },
     enterInstance(instance: Instance) {
       // 处理进入实例的逻辑，可以使用 Vue Router 跳转到实例使用页面
-      console.log("enterInstance clicked, userId: ", this.userId, "instance: ", instance.name)
-      // this.$router.push(`/instance/${instance.user}/${instance.name}`);
+      console.log("enterInstance admin clicked, instance userId: ", instance.user, "instance name: ", instance.name)
       this.$router.push({
-        name:`/instance/${instance.user}/${instance.name}`,
-        params: {
+        path:`/instance/${instance.user}/${instance.name}`,
+        query: {
           userType: "admin"
         }
       })

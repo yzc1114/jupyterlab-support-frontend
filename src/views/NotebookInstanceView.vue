@@ -102,6 +102,7 @@ export default defineComponent({
       this.instanceServiceUrl = path
     },
     returnManagement() {
+      console.log("returnManagement clicked, userType: ", this.$route.query.userType, "userId: ", this.$route.params.userId)
       if (this.$route.query.userType == "admin") {
         this.$router.push(`/instances/admin/`);
       } else {
