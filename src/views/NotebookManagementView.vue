@@ -338,7 +338,7 @@ export default defineComponent({
         return false
       }
       let cpu = Number(this.drawer.form.cpu.toFixed(1)) * 1000
-      let mem = Number(this.drawer.form.memory.toFixed(1)) * 1000
+      let mem = Number(this.drawer.form.memory.toFixed(1)) * 1024
       let gpu = Number(this.drawer.form.gpu.toFixed(0))
       console.log("doCreateInstance, cpu: ", cpu, "mem: ", mem, "gpu: ", gpu)
       let targetNode: Node | null = null;
@@ -356,7 +356,7 @@ export default defineComponent({
           if (node.cpuTotal < cpu / 1000) {
             continue
           }
-          if (node.memoryTotal - node.memoryUsed < mem / 1000) {
+          if (node.memoryTotal - node.memoryUsed < mem / 1024) {
             continue
           }
           if (node.gpuTotal - node.gpuUsed < gpu) {
@@ -406,7 +406,7 @@ export default defineComponent({
       let instanceName = instance.name
       let userId = instance.user
       let cpu = Number(this.drawer.form.cpu.toFixed(1)) * 1000
-      let mem = Number(this.drawer.form.memory.toFixed(1)) * 1000
+      let mem = Number(this.drawer.form.memory.toFixed(1)) * 1024
       let gpu = Number(this.drawer.form.gpu.toFixed(0))
       console.log("doEditInstance, instanceName: ", instanceName, "userId: ", userId, ", cpu: ", cpu, "mem: ", mem, "gpu: ", gpu)
       let node: Node | undefined = this.nodes.find(n => n.name == instance.nodeName)
@@ -419,7 +419,7 @@ export default defineComponent({
         ElMessage.error(`CPU资源不足，当前节点CPU总量为 ${node.cpuTotal} 核`);
         return false
       }
-      if (node.memoryTotal - node.memoryUsed < mem / 1000) {
+      if (node.memoryTotal - node.memoryUsed < mem / 1024) {
         ElMessage.error(`内存资源不足，当前节点内存总量为 ${node.memoryTotal.toFixed(2)} GB`);
         return false
       }
