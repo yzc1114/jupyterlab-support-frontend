@@ -47,7 +47,7 @@ export function parseInstance(pod: any): Instance {
     user: pod.metadata.labels.user,
     nodeName: pod.spec.nodeName,
     createTime: pod.metadata.creationTimestamp,
-    name: pod.metadata.name,
+    name: pod.metadata.labels.name,
     status: pod.status.phase,
     image: pod.spec.containers[0].image,
     cpuUsage: convertCPUToCore(pod.spec.containers[0].resources.requests.cpu),
