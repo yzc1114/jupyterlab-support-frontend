@@ -402,10 +402,8 @@ export default defineComponent({
       } else {
         // 复制this.nodes
         let nodes = this.nodes.slice()
-        // 将nodes按照instances的长度排序，越短越靠前
-        nodes.sort((a, b) => {
-          return a.instances.length - b.instances.length
-        })
+        // 随机排序nodes
+        nodes.sort(() => Math.random() - 0.5)
         for (let node of nodes) {
           // 检查是否存在资源足够的节点
           if (node.cpuTotal < cpu / 1000) {
