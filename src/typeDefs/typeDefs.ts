@@ -7,6 +7,8 @@ export interface Node {
     memoryTotal: number;
     gpuUsed: number;
     gpuTotal: number;
+    gpuMemUsed: number;
+    gpuMemTotal: number;
     instances: Instance[];
 }
 
@@ -20,5 +22,6 @@ export interface Instance {
     cpuUsage: number;
     memoryUsage: number;
     gpuUsage: number;
+    gpuMemUsage: number;
     createTime: string;
 }

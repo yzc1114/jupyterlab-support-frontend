@@ -74,14 +74,17 @@ export function createPodYaml(instanceName: string, userId: string, image: strin
         }
     }
     if (gpu > 0) {
+        // podYaml.spec.containers[0].resources["limits"] = {
+        //     "nvidia.com/gpu": `${gpu}`,
+        // }
         podYaml.spec.containers[0].resources["limits"] = {
-            "nvidia.com/gpu": `${gpu}`,
+            "doslab.io/vcuda-core": `${gpu}`,
         }
     }
     return podYaml
 }
 
-export function createDeployYaml(instanceName: string, userId: string, image: string, cpu: number, mem: number, gpu: number, nodeName: string, labBaseUrl: string) {
+export function createDeployYaml(instanceName: string, userId: string, image: string, cpu: number, mem: number, gpu: number, gpuMem: number, nodeName: string, labBaseUrl: string) {
     let deployYaml: any = {
         "apiVersion": "apps/v1",
         "kind": "Deployment",
@@ -95,6 +98,7 @@ export function createDeployYaml(instanceName: string, userId: string, image: st
             }
         },
         "spec": {
+            "schedulerName": "kube-gpu-scheduler",
             "selector": {
                 "matchLabels": {
                     "app": "jupyterlab-instance",
@@ -175,8 +179,16 @@ export function createDeployYaml(instanceName: string, userId: string, image: st
         }
     }
     if (gpu > 0) {
+        // deployYaml.spec.template.spec.containers[0].resources["limits"] = {
+        //     "nvidia.com/gpu": `${gpu}`,
+        // }
         deployYaml.spec.template.spec.containers[0].resources["limits"] = {
-            "nvidia.com/gpu": `${gpu}`,
+            "doslab.io/vcuda-core": `${gpu}`,
+            "doslab.io/vcuda-memory": `${gpuMem}`,
+        }
+        deployYaml.spec.template.spec.containers[0].resources["requests"] = {
+            "doslab.io/vcuda-core": `${gpu}`,
+            "doslab.io/vcuda-memory": `${gpuMem}`,
         }
     }
     return deployYaml

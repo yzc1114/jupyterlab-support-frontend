@@ -81,7 +81,11 @@ export default defineComponent({
         <el-table-column prop="image" label="镜像名称"></el-table-column>
         <el-table-column prop="cpuUsage" label="CPU占用量(核)"></el-table-column>
         <el-table-column prop="memoryUsage" label="内存占用量(GB)"></el-table-column>
-        <el-table-column prop="gpuUsage" label="GPU占用量(块)"></el-table-column>
+        <el-table-column label="GPU占用量(块)">
+          <template #default="scope">
+            {{ scope.row.gpuUsage / 100 }}
+          </template>
+        </el-table-column>
         <el-table-column label="操作" min-width="150px">
           <template #default="scope">
             <div class="instance-buttons">

@@ -25,17 +25,17 @@
         <h1 class="creation-title">{{ drawer.title }}</h1>
       </template>
       <template #default>
-        <div v-if="node != undefined">
+        <div v-if="drawer.node != undefined">
           <div class="node-info">
-            <p>节点名称：{{ node.name }}</p>
-            <p>CPU: {{ node.cpuTotal }}</p>
-            <p>内存: {{ node.memoryTotal.toFixed(2) }} GB</p>
-            <p>GPU: {{ `${node.gpuUsed}/${node.gpuTotal}` }}</p>
+            <p>节点名称：{{ drawer.node.name }}</p>
+            <p>CPU: {{ drawer.node.cpuTotal }}</p>
+            <p>内存: {{ drawer.node.memoryTotal.toFixed(2) }} GB</p>
+            <p>GPU: {{ `${drawer.node.gpuUsed}/${drawer.node.gpuTotal}` }}</p>
           </div>
         </div>
 
         <form class="form-container">
-          <el-form ref="form" :model="drawer.form" label-width="120px" size="default" label-position="top">
+          <el-form ref="form" :model="drawer.form" :rules="rules" label-width="120px" size="default" label-position="top">
             <!-- 添加 label-position="top" -->
             <el-form-item label="实例名称" prop="name">
               <el-input v-model="drawer.form.name" placeholder="请输入实例名称" :disabled="drawer.form.imageDisabled"></el-input>
@@ -65,9 +65,27 @@
               </el-col>
             </el-row>
 
-            <el-form-item label="GPU" prop="gpu">
-              <el-input-number v-model="drawer.form.gpu" :step="1" :min="0" :max="6"></el-input-number>
-            </el-form-item>
+            <el-row class="row-buttons">
+              <el-col :span="12">
+                <el-form-item label="GPU" prop="gpu">
+                  <el-input-number :min="0.0" v-model="drawer.form.gpu" :step="0.1" :precision="1" :max="6"
+                    controls-position="right" data-unit="块" class="my-el-input-number">
+                  </el-input-number>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <div class="row-container">
+                  <el-form-item label="显存" prop="gpuMem">
+                    <el-input-number :min="0" v-model="drawer.form.gpuMem" :step="1" :precision="0"
+                      controls-position="right" data-unit="GB" class="my-el-input-number"></el-input-number>
+                  </el-form-item>
+                </div>
+              </el-col>
+            </el-row>
+
+            <!-- <el-form-item label="GPU" prop="gpu">
+              <el-input-number v-model="drawer.form.gpu" :precision="1" :step="drawer.form.gpu >= 1 ? 1:0.1" :min="0" :max="6" ></el-input-number>
+            </el-form-item> -->
           </el-form>
         </form>
       </template>
@@ -163,12 +181,35 @@ export default defineComponent({
   data() {
     return {
       nodes: [] as Node[],
+      rules: {
+        name: [
+          { required: true, message: '请输入实例名称', trigger: 'change', },
+          // k8s pod name pattern
+          { pattern: /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/, message: '实例名称只能包含小写字母、数字、中划线，且不能以中划线开头或结尾', trigger: 'change' },
+          { min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'change' }
+        ],
+        image: [
+          { required: true, message: '请选择镜像', trigger: 'change' }
+        ],
+        cpu: [
+          { required: true, message: '请输入CPU核数', trigger: 'change' }
+        ],
+        memory: [
+          { required: true, message: '请输入内存大小', trigger: 'change' }
+        ],
+        gpu: [
+          { required: true, message: '请输入GPU核数', trigger: 'change' }
+        ],
+        gpuMem: [
+          { required: true, message: '请输入GPU显存大小', trigger: 'change' }
+        ],
+      },
       timerId: 0,
       userId: "",
       refreshed: 0,
-      node: undefined as Node | undefined,
       nodeLoaded: false,
       drawer: {
+        node: undefined as Node | undefined,
         open: false,
         mode: '',
         title: '',
@@ -180,6 +221,7 @@ export default defineComponent({
           cpu: 0,
           memory: 0,
           gpu: 0,
+          gpuMem: 0,
         },
         instance: undefined as Instance | undefined,
       },
@@ -264,7 +306,7 @@ export default defineComponent({
       memOption.series[0].data[0].value = memUsed / memTotal * 100
       memOption.series[0].detail.formatter = `${memUsed.toFixed(2)}/${memTotal.toFixed(2)} GB`
       gpuOption.series[0].data[0].value = gpuUsed / gpuTotal * 100
-      gpuOption.series[0].detail.formatter = `${gpuUsed}/${gpuTotal} 块`
+      gpuOption.series[0].detail.formatter = `${gpuUsed/100}/${gpuTotal/100} 块`
       cpuChart.setOption(cpuOption)
       memChart.setOption(memOption)
       gpuChart.setOption(gpuOption)
@@ -339,11 +381,12 @@ export default defineComponent({
       }
       let cpu = Number(this.drawer.form.cpu.toFixed(1)) * 1000
       let mem = Number(this.drawer.form.memory.toFixed(1)) * 1024
-      let gpu = Number(this.drawer.form.gpu.toFixed(0))
-      console.log("doCreateInstance, cpu: ", cpu, "mem: ", mem, "gpu: ", gpu)
+      let gpu = Number(this.drawer.form.gpu.toFixed(1)) * 100
+      let gpuMem = Number(this.drawer.form.gpuMem.toFixed(0)) * 4
+      console.log("doCreateInstance, cpu: ", cpu, "mem: ", mem, "gpu (vcuda-core): ", gpu, "gpuMem (vcuda-mem): ", gpuMem)
       let targetNode: Node | null = null;
-      if (this.node != undefined) {
-        targetNode = this.node
+      if (this.drawer.node != undefined) {
+        targetNode = this.drawer.node
       } else {
         // 复制this.nodes
         let nodes = this.nodes.slice()
@@ -362,6 +405,9 @@ export default defineComponent({
           if (node.gpuTotal - node.gpuUsed < gpu) {
             continue
           }
+          if (node.gpuMemTotal - node.gpuMemUsed < gpuMem) {
+            continue
+          }
           targetNode = node
         }
       }
@@ -373,7 +419,7 @@ export default defineComponent({
       let labBaseUrl = `${import.meta.env.VITE_BASE_URL}/lab/${userId}/${instanceName}`
 
       console.log("createInstance", instanceName, cpu, mem, image, targetNode.name, userId, labBaseUrl)
-      let deployYaml: any = createDeployYaml(instanceName, userId as string, image, cpu, mem, gpu, targetNode.name, labBaseUrl)
+      let deployYaml: any = createDeployYaml(instanceName, userId as string, image, cpu, mem, gpu, gpuMem, targetNode.name, labBaseUrl)
       console.log("createResource deployYaml", deployYaml)
       let createDeployResponse = await createResource(deployYaml)
       console.log("createResource createDeployResponse", createDeployResponse)
@@ -407,8 +453,9 @@ export default defineComponent({
       let userId = instance.user
       let cpu = Number(this.drawer.form.cpu.toFixed(1)) * 1000
       let mem = Number(this.drawer.form.memory.toFixed(1)) * 1024
-      let gpu = Number(this.drawer.form.gpu.toFixed(0))
-      console.log("doEditInstance, instanceName: ", instanceName, "userId: ", userId, ", cpu: ", cpu, "mem: ", mem, "gpu: ", gpu)
+      let gpu = Number(this.drawer.form.gpu.toFixed(0)) * 100
+      let gpuMem = Number(this.drawer.form.gpuMem.toFixed(0)) * 4
+      console.log("doEditInstance, instanceName: ", instanceName, "userId: ", userId, ", cpu: ", cpu, "mem: ", mem, "gpu: ", gpu, "gpuMem: ", gpuMem)
       let node: Node | undefined = this.nodes.find(n => n.name == instance.nodeName)
       if (node == undefined) {
         ElMessage.error(`获取节点 ${instance.nodeName} 信息失败`);
@@ -424,7 +471,11 @@ export default defineComponent({
         return false
       }
       if (node.gpuTotal - node.gpuUsed < gpu) {
-        ElMessage.error(`GPU资源不足，当前节点GPU总量为 ${node.gpuTotal} 块`);
+        ElMessage.error(`GPU资源不足，当前节点GPU总量为 ${node.gpuTotal/100} 块`);
+        return false
+      }
+      if (node.gpuMemTotal - node.gpuMemUsed < gpuMem) {
+        ElMessage.error(`GPU显存资源不足，当前节点GPU显存总量为 ${node.gpuMemTotal} GB`);
         return false
       }
       let image = this.drawer.form.image
@@ -432,7 +483,7 @@ export default defineComponent({
       let labBaseUrl = `${import.meta.env.VITE_BASE_URL}/lab/${userId}/${instanceName}`
 
       console.log("updateResource", instanceName, cpu, mem, image, nodeName, userId, labBaseUrl)
-      let deployYaml: any = createDeployYaml(instanceName, userId as string, image, cpu, mem, gpu, nodeName, labBaseUrl)
+      let deployYaml: any = createDeployYaml(instanceName, userId as string, image, cpu, mem, gpu, gpuMem, nodeName, labBaseUrl)
       console.log("updateResource deployYaml", deployYaml)
       let updateDeployResponse = await updateResource(deployYaml)
       console.log("updateDeployResponse updateResourceResponse", updateDeployResponse)
@@ -458,6 +509,18 @@ export default defineComponent({
         this.drawer.open = false;
       }
     },
+    // onGPUInputChange(currentValue: number | undefined, oldValue: number | undefined) {
+    //   console.log("onGPUInputChange", currentValue)
+    //   if (currentValue == undefined) {
+    //     return
+    //   }
+    //   if (currentValue > 1) {
+    //     // ceil value to integer
+    //     let ceiled = Math.ceil(currentValue)
+    //     console.log("ceiled value", ceiled)
+    //     this.drawer.form.gpu = ceiled
+    //   }
+    // },
     enterInstanceCreation(nodeName: string | null = null) {
       this.drawer.title = '创建实例';
       this.drawer.mode = 'create'
@@ -468,7 +531,7 @@ export default defineComponent({
       this.drawer.form.imageDisabled = false
       if (nodeName != null) {
         let node = this.nodes.find(n => n.name == nodeName)
-        this.node = node
+        this.drawer.node = node
         if (node == undefined) {
           ElMessage.error(`获取节点 ${nodeName} 信息失败`);
           return
@@ -477,6 +540,7 @@ export default defineComponent({
       this.drawer.form.cpu = 4
       this.drawer.form.memory = 10
       this.drawer.form.gpu = 0
+      this.drawer.form.gpuMem = 0
       this.drawer.open = true
     },
     enterInstanceEdit(instanceName: string) {
@@ -502,6 +566,7 @@ export default defineComponent({
       this.drawer.form.cpu = instance.cpuUsage
       this.drawer.form.memory = instance.memoryUsage
       this.drawer.form.gpu = instance.gpuUsage
+      this.drawer.form.gpuMem = instance.gpuMemUsage
       this.drawer.instance = instance
     }
   },
