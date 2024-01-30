@@ -306,7 +306,7 @@ export default defineComponent({
       memOption.series[0].data[0].value = memUsed / memTotal * 100
       memOption.series[0].detail.formatter = `${memUsed.toFixed(2)}/${memTotal.toFixed(2)} GB`
       gpuOption.series[0].data[0].value = gpuUsed / gpuTotal * 100
-      gpuOption.series[0].detail.formatter = `${gpuUsed/100}/${gpuTotal/100} 块`
+      gpuOption.series[0].detail.formatter = `${gpuUsed / 100}/${gpuTotal / 100} 块`
       cpuChart.setOption(cpuOption)
       memChart.setOption(memOption)
       gpuChart.setOption(gpuOption)
@@ -355,15 +355,27 @@ export default defineComponent({
       }
       return false
     },
+    async validateForm(): Promise<boolean> {
+      let form: any = this.$refs.form
+      const isValid = async (_form: any) => {
+        let valid = await _form.validate().catch((err: Error) => {
+          return false
+        })
+        return valid
+      }
+      let valid = await isValid(form)
+      if (!valid) {
+        ElMessage.error("请检查输入是否正确");
+        return false
+      }
+      return true
+    },
     async doCreateInstance(): Promise<boolean> {
       let instanceName = this.drawer.form.name
       let userId = this.$route.params.userId
-      if (instanceName == "") {
-        ElMessage.error("请输入实例名称");
-        return false
-      }
-      if (instanceName.length > 20) {
-        ElMessage.error("实例名称长度不能超过20个字符");
+      // validate form
+      let valid = await this.validateForm()
+      if (!valid) {
         return false
       }
       instanceName = `${instanceName}-${userId}`
@@ -451,6 +463,10 @@ export default defineComponent({
     async doEditInstance(instance: Instance): Promise<boolean> {
       let instanceName = instance.name
       let userId = instance.user
+      let valid = await this.validateForm()
+      if (!valid) {
+        return false
+      }
       let cpu = Number(this.drawer.form.cpu.toFixed(1)) * 1000
       let mem = Number(this.drawer.form.memory.toFixed(1)) * 1024
       let gpu = Number(this.drawer.form.gpu.toFixed(0)) * 100
@@ -471,7 +487,7 @@ export default defineComponent({
         return false
       }
       if (node.gpuTotal - node.gpuUsed < gpu) {
-        ElMessage.error(`GPU资源不足，当前节点GPU总量为 ${node.gpuTotal/100} 块`);
+        ElMessage.error(`GPU资源不足，当前节点GPU总量为 ${node.gpuTotal / 100} 块`);
         return false
       }
       if (node.gpuMemTotal - node.gpuMemUsed < gpuMem) {
