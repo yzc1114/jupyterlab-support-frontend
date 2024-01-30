@@ -105,7 +105,7 @@ import { defineComponent } from 'vue'
 import NodeStatus from '@/components/NodeStatus.vue'
 import UserInstances from '@/components/UserInstances.vue'
 import { createResource, updateResource, deleteResource, loadNodesWithInsances } from '@/api/cluster'
-import { createPodYaml, createDeployYaml, createServiceYaml, createIngressYaml } from '@/utils/yaml'
+import { createDeployYaml, createServiceYaml, createIngressYaml } from '@/utils/yaml'
 import { parseNode, parseInstance } from '@/utils/parser'
 import { ElMessage } from 'element-plus'; // 引入 Element Plus 组件库中的 Message 组件
 import { type Node, type Instance } from '@/typeDefs/typeDefs'; // 假设有定义 Node 和 Instance 类型
