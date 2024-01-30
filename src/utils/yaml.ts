@@ -182,7 +182,7 @@ export function createDeployYaml(instanceName: string, userId: string, image: st
         // deployYaml.spec.template.spec.containers[0].resources["limits"] = {
         //     "nvidia.com/gpu": `${gpu}`,
         // }
-        if (deployYaml.spec.template.spec.containers[0].resources.containsKey("limits") === false) {
+        if (!("limits" in deployYaml.spec.template.spec.containers[0].resources)) {
             deployYaml.spec.template.spec.containers[0].resources["limits"] = {}
         }
         deployYaml.spec.template.spec.containers[0].resources["limits"]["doslab.io/vcuda-core"] = `${gpu}`
