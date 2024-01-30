@@ -30,7 +30,7 @@
             <p>节点名称：{{ drawer.node.name }}</p>
             <p>CPU: {{ drawer.node.cpuTotal }}</p>
             <p>内存: {{ drawer.node.memoryTotal.toFixed(2) }} GB</p>
-            <p>GPU: {{ `${drawer.node.gpuUsed}/${drawer.node.gpuTotal}` }}</p>
+            <p>GPU: {{ `${drawer.node.gpuUsed/100}/${drawer.node.gpuTotal/100}` }}</p>
           </div>
         </div>
 
