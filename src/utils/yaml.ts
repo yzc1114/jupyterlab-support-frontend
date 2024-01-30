@@ -122,7 +122,7 @@ export function createDeployYaml(instanceName: string, userId: string, image: st
                     "containers": [
                         {
                             "name": "instance-test-6-1717008369266900994",
-                            "image": "jupyter/minimal-notebook:lab-4.0.2",
+                            "image": image,
                             "imagePullPolicy": "IfNotPresent",
                             "ports": [
                                 {
