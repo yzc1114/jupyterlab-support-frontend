@@ -132,7 +132,7 @@ export function createDeployYaml(instanceName: string, userId: string, image: st
                             "command": [
                                 "/bin/bash",
                                 "-c",
-                                `jupyter lab --generate-config && jupyter labextension disable @jupyterlab/docmanager-extension:download && jupyter labextension disable @jupyterlab/filebrowser-extension:download &&\ncat > ~/.jupyter/jupyter_lab_config.py << EOF\nc.ServerApp.tornado_settings = {\n'headers': {\n'Content-Security-Policy': \"frame-ancestors 'self' *;\",\n}\n}\nc.ServerApp.token = ''\nc.ServerApp.base_url = '${labBaseUrl}'\nc.ServerApp.password = ''\nc.ServerApp.disable_check_xsrf = True\nEOF\nstart.sh jupyter lab --ip='0.0.0.0' --ServerApp.allow_root=True --port 8888 --no-browser`
+                                `export LD_LIBRARY_PATH=/usr/local/nvidia/lib64:$LD_LIBRARY_PATH && jupyter lab --generate-config && jupyter labextension disable @jupyterlab/docmanager-extension:download && jupyter labextension disable @jupyterlab/filebrowser-extension:download &&\ncat > ~/.jupyter/jupyter_lab_config.py << EOF\nc.ServerApp.tornado_settings = {\n'headers': {\n'Content-Security-Policy': \"frame-ancestors 'self' *;\",\n}\n}\nc.ServerApp.token = ''\nc.ServerApp.base_url = '${labBaseUrl}'\nc.ServerApp.password = ''\nc.ServerApp.disable_check_xsrf = True\nEOF\nstart.sh jupyter lab --ip='0.0.0.0' --ServerApp.allow_root=True --port 8888 --no-browser`
                             ],
                             "resources": {
                                 "requests": {
@@ -147,7 +147,7 @@ export function createDeployYaml(instanceName: string, userId: string, image: st
                                 },
                                 {
                                     "name": "LD_LIBRARY_PATH",
-                                    "value": "/usr/local/nvidia/lib64"
+                                    "value": "/usr/local/nvidia/lib64:$LD_LIBRARY_PATH"
                                 }
                             ],
                             "volumeMounts": [
