@@ -144,6 +144,10 @@ export function createDeployYaml(instanceName: string, userId: string, image: st
                                 {
                                     "name": "GRANT_SUDO",
                                     "value": "yes"
+                                },
+                                {
+                                    "name": "LD_LIBRARY_PATH",
+                                    "value": "/usr/local/nvidia/lib64"
                                 }
                             ],
                             "volumeMounts": [
