@@ -60,7 +60,11 @@ export function parseInstance(pod: any): Instance {
   if ("doslab.io/vcuda-memory" in pod.spec.containers[0].resources.requests) {
     gpuMemUsage = Number(pod.spec.containers[0].resources.requests["doslab.io/vcuda-memory"]);
   }
-
+  let containerID = pod.status.containerStatuses[0].containerID
+  if (containerID) {
+    containerID = containerID.split("//")[1]
+    containerID = containerID.slice(0, 12)
+  }
   let instance: Instance = {
     user: pod.metadata.labels.user,
     nodeName: pod.spec.nodeName,
@@ -68,6 +72,7 @@ export function parseInstance(pod: any): Instance {
     name: pod.metadata.labels.name,
     status: pod.status.phase,
     image: pod.spec.containers[0].image,
+    containerID: containerID,
     cpuUsage: convertCPUToCore(pod.spec.containers[0].resources.requests.cpu),
     memoryUsage: convertToGB(pod.spec.containers[0].resources.requests.memory),
     gpuUsage: gpuUsage,

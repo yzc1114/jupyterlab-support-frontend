@@ -24,4 +24,5 @@ export interface Instance {
     gpuUsage: number;
     gpuMemUsage: number;
     createTime: string;
+    containerID: string;
 }

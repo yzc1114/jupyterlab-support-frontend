@@ -47,6 +47,11 @@ export default defineConfig(({ command, mode }) => {
         '/aiDesigner/lab': {
           target: `http://${K8S_IP}:32628`,
           changeOrigin: true,
+        },
+        '/aiDesigner/helper': {
+          target: `https://www.cpeos.org.cn`,
+          changeOrigin: true,
+          rewrite: (path: string) => path.replace(/^\/aiDesigner\/helperApi/, ''),
         }
       },
       host: '0.0.0.0',

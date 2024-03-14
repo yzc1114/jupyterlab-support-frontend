@@ -15,6 +15,11 @@ export const dataClient = axios.create({
     timeout: 10000, // Set a reasonable timeout value
 });
 
+export const helperClient = axios.create({
+    baseURL: '/aiDesigner/helperApi',
+    timeout: 10000, // Set a reasonable timeout value
+});
+
 
 
 // Add a request interceptor

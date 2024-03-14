@@ -60,6 +60,10 @@ export default defineComponent({
       // 处理摧毁实例的逻辑
       this.$emit('delete', instance.name);
     },
+    exportInstance(instance: Instance) {
+      // 处理导出实例的逻辑
+      this.$emit('export', instance.name);
+    },
   },
 });
 </script>
@@ -92,8 +96,12 @@ export default defineComponent({
               <el-button @click="enterInstance(scope.row)" type="primary" :disabled="scope.row.status !== 'Running'"
                 size="default">进入实例</el-button>
                 <el-button @click="editInstance(scope.row)" type="default" :disabled="scope.row.status !== 'Running'" size="default">编辑实例</el-button>
+            </div>
+            <div class="instance-buttons" style="padding-top: 5px;">
               <el-button @click="destroyInstance(scope.row)" type="danger" :disabled="scope.row.status === 'Terminating'"
                 size="default">摧毁实例</el-button>
+                <el-button @click="exportInstance(scope.row)" type="default" :disabled="scope.row.status === 'Terminating'"
+                size="default">导出镜像</el-button>
             </div>
           </template>
         </el-table-column>

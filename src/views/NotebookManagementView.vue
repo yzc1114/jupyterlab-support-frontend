@@ -13,11 +13,11 @@
         <div class="chart" ref="gpuChart"></div>
       </div>
       <NodeStatus v-for="n in nodes" :node="n" :user-id="userId" :key="n.name" @create="handleInstanceCreate"
-        @edit="handleInstanceEdit" @delete="handleInstanceDelete" />
+        @edit="handleInstanceEdit" @delete="handleInstanceDelete" @export="handleInstanceExport" />
     </div>
     <div v-else class="user-instances-container">
       <UserInstances :nodes="nodes" :user-id="userId" :key="refreshed" @create="handleInstanceCreate"
-        @edit="handleInstanceEdit" @delete="handleInstanceDelete" />
+        @edit="handleInstanceEdit" @delete="handleInstanceDelete" @export="handleInstanceExport" />
     </div>
 
     <el-drawer v-model="drawer.open" direction="rtl">
@@ -97,6 +97,17 @@
       </template>
     </el-drawer>
 
+    <el-dialog
+    v-model="dialog.open"
+    :title="dialog.title"
+    width="400"
+  >
+  <div class="export-dialog">
+    <span>{{ dialog.content }}</span>
+    <el-button type="primary" @click="enterWaitingExport">{{ dialog.confirmText }}</el-button>
+  </div>
+  </el-dialog>
+
   </div>
 </template>
 
@@ -105,12 +116,11 @@ import { defineComponent } from 'vue'
 import NodeStatus from '@/components/NodeStatus.vue'
 import UserInstances from '@/components/UserInstances.vue'
 import { createResource, updateResource, deleteResource, loadNodesWithInsances } from '@/api/cluster'
+import { checkExport, exportImage } from '@/api/helper'
 import { createDeployYaml, createServiceYaml, createIngressYaml } from '@/utils/yaml'
-import { parseNode, parseInstance } from '@/utils/parser'
 import { ElMessage } from 'element-plus'; // 引入 Element Plus 组件库中的 Message 组件
 import { type Node, type Instance } from '@/typeDefs/typeDefs'; // 假设有定义 Node 和 Instance 类型
-import { convertCPUToCore, convertToGB } from '@/utils/unit';
-import { ca } from 'element-plus/es/locale/index.mjs';
+import { convertCPUToCore } from '@/utils/unit';
 import * as echarts from 'echarts';
 
 function createChartOption(): any {
@@ -224,6 +234,14 @@ export default defineComponent({
           gpuMem: 0,
         },
         instance: undefined as Instance | undefined,
+      },
+      dialog: {
+        open: false,
+        instanceName: '',
+        title: '',
+        content: '',
+        showConfirm: true,
+        confirmText: '',
       },
       imageOptions: [
         'jupyter/minimal-notebook:lab-4.0.2',
@@ -346,6 +364,10 @@ export default defineComponent({
     },
     handleInstanceEdit(instanceName: string) {
       this.enterInstanceEdit(instanceName)
+    },
+    handleInstanceExport(instanceName: string) {
+      console.log("handleInstanceExport", instanceName)
+      this.enterInstanceExport(instanceName)
     },
     checkDuplicateInstance(instanceName: string): boolean {
       for (let node of this.nodes) {
@@ -523,18 +545,6 @@ export default defineComponent({
         this.drawer.open = false;
       }
     },
-    // onGPUInputChange(currentValue: number | undefined, oldValue: number | undefined) {
-    //   console.log("onGPUInputChange", currentValue)
-    //   if (currentValue == undefined) {
-    //     return
-    //   }
-    //   if (currentValue > 1) {
-    //     // ceil value to integer
-    //     let ceiled = Math.ceil(currentValue)
-    //     console.log("ceiled value", ceiled)
-    //     this.drawer.form.gpu = ceiled
-    //   }
-    // },
     enterInstanceCreation(nodeName: string | null = null) {
       this.drawer.title = '创建实例';
       this.drawer.mode = 'create'
@@ -582,7 +592,85 @@ export default defineComponent({
       this.drawer.form.gpu = instance.gpuUsage
       this.drawer.form.gpuMem = instance.gpuMemUsage
       this.drawer.instance = instance
-    }
+    },
+    findInstanceByName(instanceName: string) {
+      for (let node of this.nodes) {
+        let instance = node.instances.find(i => i.name == instanceName)
+        if (instance != undefined) {
+          return instance
+        }
+      }
+      return undefined
+    },
+    enterInstanceExport(instanceName: string) {
+      this.dialog.open = true
+      this.dialog.instanceName = instanceName
+      this.dialog.title = "导出镜像"
+      this.dialog.content = "确认是否导出镜像？（将导出至共享盘）"
+      this.dialog.showConfirm = true
+      this.dialog.confirmText = "导出"
+    },
+    enterWaitingExport() {
+      this.dialog.open = true
+      this.dialog.title = "导出镜像"
+      this.dialog.content = "导出中，请稍等片刻..."
+      this.dialog.showConfirm = true
+      this.dialog.confirmText = "重新导出"
+      var _this = this
+      let checkTimer = setInterval(async () => {
+        let res = await this.doCheckExportStatus()
+        console.log("check timer res", res)
+        if (!res) {
+          return
+        }
+        if (res.status == "success") {
+          clearInterval(checkTimer)
+          _this.dialog.open = false
+          ElMessage.success(`导出镜像成功。镜像已导出至目录: ${res.filepath}`);
+        } else if (res.status == "failed") {
+          clearInterval(checkTimer)
+          _this.dialog.content = "导出镜像失败，请稍后重试..."
+          _this.dialog.confirmText = "重新导出"
+          ElMessage.error("导出镜像失败");
+        } else if (res.status == "non-exist") {
+          clearInterval(checkTimer)
+          _this.dialog.content = "导出镜像失败，请稍后重试..."
+          _this.dialog.confirmText = "重新导出"
+          ElMessage.error("导出镜像失败，实例不存在");
+        } else if (res.status == "exporting") {
+          _this.dialog.content = "导出中，请稍等片刻..."
+          _this.dialog.confirmText = "重新导出"
+          console.log("check timer exporting...")
+        }
+      }, 3000)
+    },
+    async doCheckExportStatus() {
+      let instanceName = this.dialog.instanceName
+      let instance = this.findInstanceByName(instanceName)
+      if (!instance) {
+        ElMessage.error(`获取实例 ${instanceName} 信息失败`);
+        return
+      }
+      let res = await checkExport({
+        nodeIP: instance.nodeName,
+        podName: instance.name,
+        containerID: instance.containerID
+      })
+      return res.result
+    },
+    async exportInstance(instanceName: string) {
+      console.log("exportInstance", instanceName)
+      let instance = this.findInstanceByName(instanceName)
+      if (!instance) {
+        ElMessage.error(`获取实例 ${instanceName} 信息失败`);
+        return
+      }
+      await exportImage({
+        nodeIP: instance.nodeName,
+        podName: instance.name,
+        containerID: instance.containerID
+      })
+    },
   },
 });
 </script>
@@ -734,5 +822,13 @@ h2 {
   margin-bottom: 10px;
   font-weight: bold;
   color: black;
+}
+
+.export-dialog {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 }
 </style>
