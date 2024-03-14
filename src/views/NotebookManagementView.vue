@@ -610,7 +610,9 @@ export default defineComponent({
       this.dialog.showConfirm = true
       this.dialog.confirmText = "导出"
     },
-    enterWaitingExport() {
+    async enterWaitingExport() {
+      let res = await this.exportInstance(this.dialog.instanceName)
+      console.log("enterWaitingExport", res)
       this.dialog.open = true
       this.dialog.title = "导出镜像"
       this.dialog.content = "导出中，请稍等片刻..."
@@ -665,7 +667,7 @@ export default defineComponent({
         ElMessage.error(`获取实例 ${instanceName} 信息失败`);
         return
       }
-      await exportImage({
+      return await exportImage({
         nodeIP: instance.nodeName,
         podName: instance.name,
         containerID: instance.containerID
