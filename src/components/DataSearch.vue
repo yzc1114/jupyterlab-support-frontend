@@ -201,6 +201,9 @@ export default defineComponent({
             },
             nameFormatter: (row: SatelliteImage, column: TableColumnCtx<SatelliteImage>) => {
                 let fileUrl = row.fileUrl;
+                if (!fileUrl) {
+                    return "";
+                }
                 // get base name
                 let baseName = fileUrl.split("/").pop();
                 return baseName;
@@ -233,7 +236,7 @@ export default defineComponent({
             params.maxCloudPercent = dataSearchModel.maxCloudPercent
             params.minImageGsd = dataSearchModel.minImageGSD
             params.maxImageGsd = dataSearchModel.maxImageGSD
-            params.ifExistFileUrl = true
+            params.ifExistFileUrl = false
             params.satelliteList = []
             for (let satelliteName in dataSearchModel.satellites) {
                 let satellite = dataSearchModel.satellites[satelliteName]
