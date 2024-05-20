@@ -149,7 +149,7 @@ var defaultDataSearchParams = {
     regionName: "北京市",
     filterSatelliteList: [],
     ifThumbUrl: false,
-    ifExistFileUrl: true,
+    ifExistFileUrl: false,
 } as DataRequestParams
 
 var defaultDataSearchModel = {

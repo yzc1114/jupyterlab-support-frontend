@@ -204,6 +204,7 @@ export default defineComponent({
         async searchUserSample() {
             let userSampleSearchModel = this.userSampleSearchModel
             let userSampleSearchParams = Object.assign({}, defaultUserSampleSearchParams)
+            userSampleSearchParams.pageNum = this.userSamplePagination.currentPage;
             userSampleSearchParams.bands = this.userSampleCheckboxes.bands ? userSampleSearchModel.bands : null
             userSampleSearchParams.sampleSetName = this.userSampleCheckboxes.sampleSetName ? userSampleSearchModel.sampleSetName : null
             userSampleSearchParams.format = userSampleSearchModel.format === "0" ? null : userSampleSearchModel.format
@@ -224,6 +225,7 @@ export default defineComponent({
         async searchPlatformSample() {
             let platformSampleSearchModel = this.platformSampleSearchModel
             let platformSampleSearchParams = Object.assign({}, defaultPlatformSapleSearchParams)
+            platformSampleSearchParams.pageNum = this.platformSamplePagination.currentPage;
             platformSampleSearchParams.bands = this.platformSampleCheckboxes.bands ? platformSampleSearchModel.bands : null
             platformSampleSearchParams.resolution = this.platformSampleCheckboxes.resolution ? platformSampleSearchModel.resolution : null
             platformSampleSearchParams.sampleSetName = this.platformSampleCheckboxes.sampleSetName ? platformSampleSearchModel.sampleSetName : null
