@@ -92,7 +92,7 @@
       <template #footer>
         <div style="flex: auto">
           <el-button @click="cancelDrawerClick">取消</el-button>
-          <el-button type="primary" @click="confirmDrawerClick">确认</el-button>
+          <el-button type="primary" @click="confirmDrawerClick" :diabled="drawer.doing" :loading="drawer.doing">确认</el-button>
         </div>
       </template>
     </el-drawer>
@@ -219,6 +219,7 @@ export default defineComponent({
       refreshed: 0,
       nodeLoaded: false,
       drawer: {
+        doing: false,
         node: undefined as Node | undefined,
         open: false,
         mode: '',
@@ -534,12 +535,14 @@ export default defineComponent({
       this.drawer.open = false;
     },
     async confirmDrawerClick() {
+      this.drawer.doing = true;
       let succeeded = false
       if (this.drawer.mode == 'edit') {
         succeeded = await this.doEditInstance(this.drawer.instance as Instance)
       } else {
         succeeded = await this.doCreateInstance()
       }
+      this.drawer.doing = false;
       if (succeeded) {
         await this.refresh(false)
         this.drawer.open = false;

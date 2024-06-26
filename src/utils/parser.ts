@@ -54,30 +54,32 @@ export function parseNode(node: any): Node {
 export function parseInstance(pod: any): Instance {
   let gpuUsage = 0;
   let gpuMemUsage = 0;
-  if ("doslab.io/vcuda-core" in pod.spec.containers[0].resources.requests) {
+  if ("doslab.io/vcuda-core" in pod.spec?.containers[0]?.resources?.requests) {
     gpuUsage = Number(pod.spec.containers[0].resources.requests["doslab.io/vcuda-core"]);
   }
-  if ("doslab.io/vcuda-memory" in pod.spec.containers[0].resources.requests) {
+  if ("doslab.io/vcuda-memory" in pod.spec?.containers[0]?.resources?.requests) {
     gpuMemUsage = Number(pod.spec.containers[0].resources.requests["doslab.io/vcuda-memory"]);
   }
-  let containerID = pod.status.containerStatuses[0].containerID
-  if (containerID) {
+  let containerID = "";
+  let containerStatuses = pod.status?.containerStatuses;
+  if (containerStatuses && containerStatuses.length > 0) {
+    let containerID = containerStatuses[0].containerID;
     containerID = containerID.split("//")[1]
     containerID = containerID.slice(0, 12)
   }
   let instance: Instance = {
-    user: pod.metadata.labels.user,
-    nodeName: pod.spec.nodeName,
-    createTime: pod.metadata.creationTimestamp,
-    name: pod.metadata.labels.name,
-    status: pod.status.phase,
-    image: pod.spec.containers[0].image,
+    user: pod.metadata?.labels?.user,
+    nodeName: pod.spec?.nodeName,
+    createTime: pod.metadata?.creationTimestamp,
+    name: pod.metadata?.labels?.name,
+    status: pod.status?.phase,
+    image: pod.spec?.containers[0]?.image,
     containerID: containerID,
-    cpuUsage: convertCPUToCore(pod.spec.containers[0].resources.requests.cpu),
-    memoryUsage: convertToGB(pod.spec.containers[0].resources.requests.memory),
+    cpuUsage: convertCPUToCore(pod.spec?.containers[0]?.resources?.requests?.cpu),
+    memoryUsage: convertToGB(pod.spec?.containers[0]?.resources?.requests?.memory),
     gpuUsage: gpuUsage,
     gpuMemUsage: gpuMemUsage,
-    id: pod.metadata.uid,
+    id: pod.metadata?.uid,
   }
   return instance
 }
