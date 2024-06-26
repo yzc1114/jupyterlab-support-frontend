@@ -63,9 +63,11 @@ export function parseInstance(pod: any): Instance {
   let containerID = "";
   let containerStatuses = pod.status?.containerStatuses;
   if (containerStatuses && containerStatuses.length > 0) {
-    let containerID = containerStatuses[0].containerID;
-    containerID = containerID.split("//")[1]
-    containerID = containerID.slice(0, 12)
+    containerID = containerStatuses[0].containerID;
+    if (containerID && typeof containerID === "string" && containerID.startsWith("docker://")) {
+      containerID = containerID.split("//")[1]
+      containerID = containerID.slice(0, 12)
+    }
   }
   let instance: Instance = {
     user: pod.metadata?.labels?.user,
