@@ -11,7 +11,7 @@ const rootBeakerApi = new Gitlab({
     token: "glpat-gz_pqU8ns8ZQ1M6aCE8N"
 });
 
-const mock = false;
+const mock = true;
 
 export interface TreeNode {
     name: string;
@@ -325,10 +325,34 @@ export const getUser = async (params: GetUserParams): Promise<GetUserResponse> =
     if (!api) {
         return tokenNotExistResponse as GetUserResponse;
     }
-    try {
-        response = await api.Users.all({ username: params.gitlabUserName, perPage: 1 })
-    } catch (e) {
-        return apiErrorResponse(e) as GetUserResponse;
+    if (mock) {
+        response = [{
+            "id": 2,
+                    "name": "test1l test1f",
+                    "username": "test1",
+                    "state": "active",
+                    "avatar_url": "https://www.gravatar.com/avatar/50ce962eb454e5eed42442130ca028eb?s=80&d=identicon",
+                    "web_url": "http://1240edfb84bb/test1",
+                    "created_at": "2023-11-30T06:37:32.116Z",
+                    "bio": null,
+                    "location": null,
+                    "public_email": "",
+                    "skype": "",
+                    "linkedin": "",
+                    "twitter": "",
+                    "website_url": "",
+                    "organization": "",
+                    "last_sign_in_at": "2023-11-30T06:37:32.116Z",
+                    "confirmed_at": "2023-11-30T06:37:32.116Z",
+                    "last_activity_on": "2023-11-30",
+                    "email": "test@email.com",
+        }];
+    } else {
+        try {
+            response = await api.Users.all({ username: params.gitlabUserName, perPage: 1 })
+        } catch (e) {
+            return apiErrorResponse(e) as GetUserResponse;
+        }
     }
     console.log("getUser response", response)
     let result: GetUserResponse = {

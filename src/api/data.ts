@@ -41,14 +41,11 @@ export interface DataRequestParams {
     topology: number;
     endTime: string;
     maxCloudPercent: number;
-    cityId: number;
-    countyId: number;
-    provinceId: number;
     regionLevel: number;
     regionName: string;
     filterSatelliteList: Satellite[];
     ifThumbUrl: boolean;
-    ifExistFileUrl: boolean;
+    ifExistFileUrl: boolean|undefined;
 }
 
 export interface DataResponse {
@@ -66,7 +63,39 @@ export interface DataResponse {
     success: boolean;
 }
 
+export interface RegionItem {
+    name: string,
+    adminCode: string
+}
 
+export const getProvinces = async (): Promise<RegionItem[]> => {
+    const response = await dataClient.get('/yjcImage/administrative/province');
+    console.log("get provinces response", response);
+    if (response.data.code === 200) {
+        return response.data.data;
+    }
+    return [];
+}
+
+export const getCities = async (provinceCode: string): Promise<RegionItem[]> => {
+    // https://www.cpeos.org.cn/yjcImage/administrative/city?provinceCode=110000
+    const response = await dataClient.get(`/yjcImage/administrative/city?provinceCode=${provinceCode}`);
+    console.log("get cities response", response);
+    if (response.data.code === 200) {
+        return response.data.data;
+    }
+    return [];
+}
+
+export const getCounties = async (cityCode: string): Promise<RegionItem[]> => {
+    // https://www.cpeos.org.cn/yjcImage/administrative/county?cityCode=110100
+    const response = await dataClient.get(`/yjcImage/administrative/county?cityCode=${cityCode}`);
+    console.log("get counties response", response);
+    if (response.data.code === 200) {
+        return response.data.data;
+    }
+    return [];
+}
 
 
 export const getDataList = async (params: DataRequestParams): Promise<DataResponse> => {

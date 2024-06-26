@@ -215,7 +215,7 @@ export default defineComponent({
                         ElMessage.error('用户不存在！');
                         return null
                     }
-                    console.log("getUserResponse at tabChanged", response)
+                    console.log("getUserResponse at tabChanged", response);
                     _this.codeTabs[_this.activeTab].gitOwnerId = response.data.userInfos[0].id
                     if (_this.codeTabs[_this.activeTab].gitOwnerId == null) {
                         return null
@@ -282,7 +282,7 @@ export default defineComponent({
                 }
                 data.content = content;
                 showCodeDialog(data.name, data.content);
-            }, 5000);
+            }, 1000);
         },
         async handleGotoRepo(data: TreeNode) {
             let url = `${import.meta.env.VITE_GIT_BASE_URL}/${this.codeTabs[this.activeTab].gitOwnerId}/${data.repoName}`

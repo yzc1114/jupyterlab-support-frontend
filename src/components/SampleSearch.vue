@@ -47,6 +47,9 @@
                 <sample-table v-if="userSampleSearchResult" :table-data="userSampleSearchResult.data.list"
                     :columns="tableColumns" :pagination="userSamplePagination"
                     @page-change="handleUserSamplePageChange"></sample-table>
+                <loading v-model:active="searching" :height="30"
+                                            :width="30" color="#007bff" background-color="white" loader="bars"
+                                            :is-full-page="false" />
             </div>
 
 
@@ -86,11 +89,14 @@
                     </el-form-item>
                 </el-form>
                 <div class="search-button-container">
-                    <el-button class="search-button" type="primary" @click="searchPlatformSample" size="large">搜索</el-button>
+                    <el-button class="search-button" type="primary" @click="searchPlatformSample" size="large" :loading="searching">搜索</el-button>
                 </div>
                 <sample-table v-if="platformSampleSearchResult" :table-data="platformSampleSearchResult.data.list"
                     :columns="tableColumns" :pagination="platformSamplePagination"
                     @page-change="handlePlatformSamplePageChange"></sample-table>
+                <loading v-model:active="searching" :height="30"
+                                            :width="30" color="#007bff" background-color="white" loader="bars"
+                                            :is-full-page="false" />
             </div>
 
         </el-tab-pane>
@@ -103,6 +109,8 @@ import { type Node, type Instance } from '@/typeDefs/typeDefs'; // 假设有定�
 import { type UserSampleSet, type UserSampleApiResponse, type UserSampleSetQueryParams, type PlatformSampleSet, type PlatformSampleApiResponse, type PlatformSampleSetQueryParams, getUserSampleList, getPlatformSampleList } from '@/api/samples'
 import { ElMessage } from 'element-plus'; // 引入 Element Plus 组件库中的 Message 组件
 import SampleTable from '@/components/SampleTable.vue'
+import Loading from 'vue-loading-overlay';
+import 'vue-loading-overlay/dist/css/index.css';
 
 var defaultUserSampleSearchParams = {
     pageSize: 10,
@@ -149,9 +157,11 @@ export default defineComponent({
     name: 'SampleSearch',
     components: {
         SampleTable,
+        Loading,
     },
     data() {
         return {
+            searching: false,
             instanceServiceUrl: "",
             activeTab: 'userSample', // Active tab (userSample or platformSample)
             userSampleSearchModel: defaultUserSampleSearchModel,
@@ -212,7 +222,9 @@ export default defineComponent({
             userSampleSearchParams.type = userSampleSearchModel.type === "0" ? null : Number(userSampleSearchModel.type)
             userSampleSearchParams.userId = this.userId;
             console.log("searchUserSample request", userSampleSearchParams)
+            this.searching = true;
             const response = await getUserSampleList(userSampleSearchParams)
+            this.searching = false;
             console.log("searchUserSample response", response)
             if (response.code !== 200) {
                 let msg: string = `搜索失败，原因：${response.message}`
@@ -231,7 +243,9 @@ export default defineComponent({
             platformSampleSearchParams.sampleSetName = this.platformSampleCheckboxes.sampleSetName ? platformSampleSearchModel.sampleSetName : null
             platformSampleSearchParams.type = platformSampleSearchModel.type === "0" ? null : Number(platformSampleSearchModel.type)
             console.log("searchPlatformSample request", platformSampleSearchParams)
+            this.searching = true;
             const response = await getPlatformSampleList(platformSampleSearchParams)
+            this.searching = false;
             console.log("searchPlatformSample response", response)
             if (response.code !== 200) {
                 let msg: string = `搜索失败，原因：${response.message}`

@@ -8,6 +8,7 @@
                 </el-col>
                 <el-col :span="20">
                     <el-date-picker v-model="dataSearchModel.dateRange" type="daterange" range-separator="To"
+                        unlink-panels
                         start-placeholder="开始日期" end-placeholder="结束日期" format="YYYY/MM/DD" value-format="YYYY-MM-DD"
                         :default-value="[new Date(), new Date()]" />
                 </el-col>
@@ -66,37 +67,62 @@
                     区域
                 </el-col>
                 <el-col :span="20">
-                    <el-cascader style="width: 300px;" :options="regionData" :props="regionDataCascaderProps"
+                    <el-cascader style="width: 300px;" :props="regionDataCascaderProps"
                         v-model="dataSearchModel.regionSelected" @change="console.log(dataSearchModel.regionSelected)">
                     </el-cascader>
                 </el-col>
             </el-row>
 
+            <el-row class="form-item-row">
+                <el-col :span="4" class="form-item-label">
+                    包含路径
+                </el-col>
+                <el-col :span="20">
+                    <el-select style="width: 300px;" v-model="dataSearchModel.ifExistFileUrl" placeholder="请选择">
+                        <el-option label="是" :value="true"></el-option>
+                        <el-option label="否" :value="false"></el-option>
+                    </el-select>
+                </el-col>
+            </el-row>
+
         </el-form>
         <div class="primary-button-container">
-            <el-button type="primary" @click="searchData" size="large" class="primary-button">搜索</el-button>
+            <el-button type="primary" @click="searchData" size="large" class="primary-button" :loading="searching">搜索</el-button>
         </div>
         <div class="table-container">
             <el-table v-if="dataSearchResult !== null" :data="dataSearchResult.data.datas" class="el-table"
                 :cell-style="{ textAlign: 'center' }" :header-cell-style="{ 'text-align': 'center' }">
                 <el-table-column label="选择" min-width="40">
                     <template #default="{ row }">
-                        <el-checkbox v-model="dataSearchResultSelectedImages[row.fileUrl]"></el-checkbox>
+                        <el-checkbox v-model="dataSearchResultSelectedImages[row.name]" :disabled="!row.fileUrl"></el-checkbox>
                     </template>
                 </el-table-column>
 
-                <el-table-column prop="fileUrl" label="名称" :formatter="nameFormatter" />
+                <el-table-column prop="name" label="名称" :formatter="nameFormatter" min-width="150" />
                 <el-table-column label="缩略图">
                     <template #default="{ row }">
-                        <img :src="row.thumbUrl" alt="" style="width: 20px; height: 20px;">
+                        <img :src="row.thumbUrl" alt="" style="width: 50px; height: 50px;">
                     </template>
                 </el-table-column>
                 <el-table-column prop="satelliteId" label="卫星" min-width="80" />
                 <el-table-column prop="sensorId" label="传感器" min-width="80" />
-                <el-table-column prop="receiveTime" label="接收时间" min-width="150" />
+                <el-table-column prop="receiveTime" label="接收时间" min-width="80" />
                 <el-table-column prop="cloudPercent" label="云量" min-width="80" />
-                <el-table-column prop="sources" label="来源" min-width="200" />
+                <el-table-column prop="sources" label="来源" min-width="80" />
+                <el-table-column prop="fileUrl" label="路径" min-width="80" >
+                    <template #default="{ row }">
+                        <div v-if="row.fileUrl">
+                            <el-button @click="copySingleLink(row.fileUrl)">复制</el-button>
+                        </div>
+                        <div v-else>
+                            无
+                        </div>
+                    </template>
+                </el-table-column>
             </el-table>
+            <loading v-model:active="searching" :height="30"
+                                            :width="30" color="#007bff" background-color="white" loader="bars"
+                                            :is-full-page="false" />
         </div>
 
         <div class="pagination" v-if="dataSearchResult">
@@ -107,7 +133,7 @@
 
         <div v-if="dataSearchResult" class="primary-button-container">
             <el-button @click="copyDataLinks" type="primary" size="large" class="primary-button">
-                复制选中链接
+                复制选中路径
             </el-button>
         </div>
     </div>
@@ -116,18 +142,13 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { type Node, type Instance } from '@/typeDefs/typeDefs'; // 假设有定义 Node 和 Instance 类型
-import { type DataRequestParams, type DataResponse, type SatelliteImage, type Satellite, getDataList } from '@/api/data'
+import { type DataRequestParams, type DataResponse, type SatelliteImage, type Satellite, type RegionItem, getDataList, getProvinces, getCities, getCounties } from '@/api/data'
 import { ElMessage } from 'element-plus'; // 引入 Element Plus 组件库中的 Message 组件
 import SampleTable from '@/components/SampleTable.vue'
 import type { TableColumnCtx } from 'element-plus'
 import { copyToClipboard } from '@/utils/clipboard'
-import {
-    provinceAndCityData,
-    pcTextArr,
-    regionData,
-    pcaTextArr,
-    codeToText,
-} from "element-china-area-data";
+import Loading from 'vue-loading-overlay';
+import 'vue-loading-overlay/dist/css/index.css';
 
 var defaultDataSearchParams = {
     satelliteSensorImageModeList: [],
@@ -142,14 +163,11 @@ var defaultDataSearchParams = {
     topology: 1,
     endTime: "",
     maxCloudPercent: 0,
-    cityId: 0,
-    countyId: 0,
-    provinceId: 110000000000,
-    regionLevel: 1,
-    regionName: "北京市",
+    regionLevel: 0,
+    regionName: "全国",
     filterSatelliteList: [],
     ifThumbUrl: false,
-    ifExistFileUrl: false,
+    ifExistFileUrl: undefined,
 } as DataRequestParams
 
 var defaultDataSearchModel = {
@@ -158,7 +176,7 @@ var defaultDataSearchModel = {
     maxCloudPercent: 20,
     minImageGSD: 0,
     maxImageGSD: 25,
-    regionSelected: [],
+    regionSelected: [] as string[],
     satellites: {
         "GF1": {
             "PMS1": true, "PMS2": true, "WFV1": true, "WFV2": true, "WFV3": true, "WFV4": true
@@ -173,6 +191,7 @@ var defaultDataSearchModel = {
             "BWD": true, "DLC": true, "FWD": true, "SLA": true
         }
     } as { [key: string]: { [key: string]: boolean } },
+    ifExistFileUrl: undefined,
 }
 
 
@@ -181,12 +200,50 @@ export default defineComponent({
     name: 'SampleSearch',
     components: {
         SampleTable,
+        Loading,
     },
     data() {
         return {
-            regionData,
+            searching: false,
             regionDataCascaderProps: {
                 checkStrictly: true,
+                lazy: true,
+                // @ts-ignore
+                async lazyLoad(node, resolve) {
+                    console.log("node: ", node);
+                    if (node.level === 0) {
+                        resolve([
+                            {
+                                value: "全国",
+                                label: "全国",
+                                children: []
+                            }]);
+                        return;
+                    }
+                    if (node.level === 1 || node.level === 2 || node.level === 3) {
+                        let data: RegionItem[] = [];
+                        if (node.level === 1) {
+                            data = await getProvinces();
+                        } else if (node.level === 2) {
+                            data = await getCities(node.data.adminCode);
+                        } else if (node.level === 3) {
+                            data = await getCounties(node.data.adminCode);
+                        }
+                        let nodes = [];
+                        for (let item of data) {
+                            nodes.push({
+                                value: item.name,
+                                label: item.name,
+                                adminCode: item.adminCode,
+                                children: [],
+                                leaf: node.level === 3,
+                            });
+                        }
+                        resolve(nodes);
+                        return;
+                    }
+                    
+                },
             },
             instanceServiceUrl: "",
             dataSearchVisible: false,
@@ -200,13 +257,11 @@ export default defineComponent({
                 pageSize: 10,
             },
             nameFormatter: (row: SatelliteImage, column: TableColumnCtx<SatelliteImage>) => {
-                let fileUrl = row.fileUrl;
-                if (!fileUrl) {
+                let name = row.name;
+                if (!name) {
                     return "";
                 }
-                // get base name
-                let baseName = fileUrl.split("/").pop();
-                return baseName;
+                return name;
             }
         };
     },
@@ -230,13 +285,18 @@ export default defineComponent({
             console.log("searchData", this.dataSearchModel)
             let params = Object.assign({}, defaultDataSearchParams)
             let dataSearchModel = this.dataSearchModel
+            if (dataSearchModel.regionSelected === undefined || dataSearchModel.regionSelected.length === 0) {
+                dataSearchModel.regionSelected = ["全国"]
+            }
+            params.regionName = dataSearchModel.regionSelected[dataSearchModel.regionSelected.length - 1]
+            params.regionLevel = dataSearchModel.regionSelected.length - 1;
             params.startTime = dataSearchModel.dateRange[0]
             params.endTime = dataSearchModel.dateRange[1]
             params.minCloudPercent = dataSearchModel.minCloudPercent
             params.maxCloudPercent = dataSearchModel.maxCloudPercent
             params.minImageGsd = dataSearchModel.minImageGSD
             params.maxImageGsd = dataSearchModel.maxImageGSD
-            params.ifExistFileUrl = false
+            params.ifExistFileUrl = dataSearchModel.ifExistFileUrl
             params.satelliteList = []
             for (let satelliteName in dataSearchModel.satellites) {
                 let satellite = dataSearchModel.satellites[satelliteName]
@@ -259,7 +319,9 @@ export default defineComponent({
             params.offset = this.pagination.currentPage
             params.limit = this.pagination.pageSize
             console.log("getDataList params", params)
+            this.searching = true;
             let response = await getDataList(params)
+            this.searching = false;
             console.log("getDataList response", response)
             if (response.code !== 200) {
                 ElMessage.error(`搜索失败，原因：${response.message}`)
@@ -311,23 +373,37 @@ export default defineComponent({
             }
         },
         copyDataLinks() {
-            // iterate this.dataSearchResultSelectedImages and copy the selected images
-            let selectedImages = []
-            for (let thumbUrl in this.dataSearchResultSelectedImages) {
-                if (this.dataSearchResultSelectedImages[thumbUrl]) {
-                    thumbUrl = `\"${thumbUrl}\"`
-                    selectedImages.push(thumbUrl)
-                }
-            }
-            if (selectedImages.length === 0) {
+            if (Object.keys(this.dataSearchResultSelectedImages).length === 0) {
                 ElMessage.info('请先选择要复制的数据！')
                 return
             }
+            if (this.dataSearchResult === null || this.dataSearchResult?.data?.datas?.length === 0) {
+                ElMessage.error('搜索结果为空！')
+                return
+            }
+            // iterate this.dataSearchResultSelectedImages and extract the fileUrl of selected images
+            let selectedImageFileUrls: string[] = []
+            for (let name in this.dataSearchResultSelectedImages) {
+                this.dataSearchResult?.data?.datas?.forEach((image: SatelliteImage) => {
+                    if (image.name === name) {
+                        if (image.fileUrl) {
+                            selectedImageFileUrls.push(image.fileUrl)
+                        } else {
+                            selectedImageFileUrls.push("null")
+                        }
+                    }
+                })
+            }
+        
             // convert selectedImages to string
-            let selectedImagesString = `[${selectedImages.join(", ")}]`
+            let selectedImagesString = `[${selectedImageFileUrls.join(", ")}]`
             copyToClipboard(selectedImagesString)
-            ElMessage.success('链接已复制到剪贴板！');
-        }
+            ElMessage.success('路径已复制到剪贴板！');
+        },
+        copySingleLink(link: string) {
+            copyToClipboard(link)
+            ElMessage.success('路径已复制到剪贴板！');
+        },
     },
 });
 </script>
