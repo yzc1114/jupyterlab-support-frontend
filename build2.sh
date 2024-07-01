@@ -1,6 +1,6 @@
 #!/bin/bash
 
-docker_user=10.1.75.10:30003/library/admin
+docker_user=10.1.75.33:30003/library/admin
 image_name=jupyterlab-management-frontend
 image_tag=v3
 
