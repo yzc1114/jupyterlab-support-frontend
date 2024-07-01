@@ -145,7 +145,7 @@ export default defineComponent({
             codeTabs: {
                 'platform': {
                     label: '模型代码',
-                    gitOwnerId: 'root',
+                    gitOwnerId: 'ai_workbench',
                     dataSource: null as TreeNode[] | null,
                 },
                 'user': {

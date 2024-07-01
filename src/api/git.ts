@@ -8,10 +8,11 @@ const gitUrl = import.meta.env.VITE_GIT_BASE_URL
 const rootBeakerApi = new Gitlab({
     host: gitUrl,
     // token: "glpat-RZnzx43BUo4x8T5cpyyG",
-    token: "glpat-gz_pqU8ns8ZQ1M6aCE8N"
+    // token: "glpat-gz_pqU8ns8ZQ1M6aCE8N"
+    token: "glpat-shx6zKCzhkMJc-wTmyV1"
 });
 
-const mock = true;
+const mock = false;
 
 export interface TreeNode {
     name: string;

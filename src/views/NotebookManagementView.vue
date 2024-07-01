@@ -103,7 +103,22 @@
     width="400"
   >
   <div class="export-dialog">
-    <span>{{ dialog.content }}</span>
+    <form class="form-container">
+          <el-form ref="container_export_form" :model="dialog.model" :rules="imageRules" label-width="120px" size="default" label-position="top">
+            <el-form-item label="镜像名称" prop="imageName">
+              <el-input v-model="dialog.model.imageName" placeholder="请输入镜像名称"></el-input>
+            </el-form-item>
+
+            <el-form-item label="镜像tag" prop="imageTag">
+              <el-input v-model="dialog.model.imageTag" placeholder="请输入镜像tag"></el-input>
+            </el-form-item>
+
+            <el-form-item label="说明" prop="statement">
+              <el-input v-model="dialog.model.statement" placeholder="请输入说明"></el-input>
+            </el-form-item>
+          </el-form>
+        </form>
+        <span>{{ dialog.content }}</span>
     <el-button type="primary" @click="enterWaitingExport">{{ dialog.confirmText }}</el-button>
   </div>
   </el-dialog>
@@ -214,6 +229,22 @@ export default defineComponent({
           { required: true, message: '请输入GPU显存大小', trigger: 'change' }
         ],
       },
+      imageRules: {
+        imageName: [
+          { required: true, message: '请输入镜像名称', trigger: 'change', },
+          { pattern: /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/, message: '镜像名称只能包含小写字母、数字、中划线，且不能以中划线开头或结尾', trigger: 'change' },
+          { min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'change' }
+        ],
+        imageTag: [
+          { required: true, message: '请输入镜像tag', trigger: 'change' },
+          { pattern: /^[a-z0-9]([a-z0-9]*[a-z0-9])?$/, message: '镜像tag只能包含小写字母、数字', trigger: 'change' },
+          { min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'change' }
+        ],
+        statement: [
+          { required: true, message: '请输入说明', trigger: 'change' },
+          { min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'change' }
+        ]
+      },
       timerId: 0,
       userId: "",
       refreshed: 0,
@@ -243,6 +274,11 @@ export default defineComponent({
         content: '',
         showConfirm: true,
         confirmText: '',
+        model: {
+          imageName: '',
+          imageTag: '',
+          statement: '',
+        },
       },
       imageOptions: [
         'jupyter/minimal-notebook:lab-4.0.2',
@@ -609,7 +645,8 @@ export default defineComponent({
       this.dialog.open = true
       this.dialog.instanceName = instanceName
       this.dialog.title = "导出镜像"
-      this.dialog.content = "确认是否导出镜像？（将导出至共享盘）"
+      // this.dialog.content = "确认是否导出镜像？（将导出至共享盘）"
+      this.dialog.content = ""
       this.dialog.showConfirm = true
       this.dialog.confirmText = "导出"
     },
@@ -832,7 +869,7 @@ h2 {
 .export-dialog {
   width: 100%;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   justify-content: space-between;
 }
