@@ -683,21 +683,25 @@ export default defineComponent({
       return undefined
     },
     async enterInstanceExport(instanceName: string) {
+      let instance = this.findInstanceByName(instanceName);
+      if (!instance) {
+        ElMessage.error(`获取实例 ${instanceName} 信息失败`);
+        return
+      }
       this.dialog.open = true
       this.dialog.instanceName = instanceName
       this.dialog.title = "导出镜像"
-      let res = await this.doCheckExportStatus(instanceName)
-      console.log("check timer res", res)
-      if (!res) {
-        return;
-      }
-      if (res.status == "exporting") {
-        this.dialog.content = "导出中，请稍等片刻..."
-        this.dialog.confirmText = "重新导出"
-      } else {
-        this.dialog.confirmText = "导出"
-      }
+      this.dialog.content = ""
+      this.dialog.confirmText = "导出"
       this.dialog.showConfirm = true
+      this.dialog.model = {
+        imageName: '',
+        imageTag: '',
+        statement: '',
+        env: '',
+        type: '1',
+        useType: 'Train',
+      }
     },
     async enterWaitingExport() {
       let instanceName = this.dialog.instanceName;
@@ -711,11 +715,17 @@ export default defineComponent({
       if (!valid) {
         return
       }
+      let imageName = this.dialog.model.imageName;
+      let imageTag = this.dialog.model.imageTag;
+      let description = this.dialog.model.statement;
+      let env = this.dialog.model.env;
+      let type = this.dialog.model.type;
+      let useType = this.dialog.model.useType;
       let res = await exportImage({
         nodeIP: instance.nodeName,
         containerID: instance.containerID,
-        imageName: this.dialog.model.imageName,
-        imageVersion: this.dialog.model.imageTag,
+        imageName: imageName,
+        imageVersion: imageTag,
       })
       console.log("enterWaitingExport", res)
       this.dialog.open = true
@@ -725,7 +735,7 @@ export default defineComponent({
       this.dialog.confirmText = "重新导出"
       var _this = this
       let checkTimer = setInterval(async () => {
-        let res = await this.doCheckExportStatus(instanceName)
+        let res = await this.doCheckExportStatus(instanceName, imageName, imageTag)
         console.log("check timer res", res)
         if (!res) {
           return
@@ -734,12 +744,12 @@ export default defineComponent({
           clearInterval(checkTimer)
           try {
             let uploadRes = await uploadOnlineModel({
-              name: _this.dialog.model.imageName,
-              version: _this.dialog.model.imageTag,
-              description: _this.dialog.model.statement,
-              env: _this.dialog.model.env,
-              type: _this.dialog.model.type,
-              useType: _this.dialog.model.useType,
+              name: imageName,
+              version: imageTag,
+              description: description,
+              env: env,
+              type: type,
+              useType: useType,
               dataSize: res.image_size,
             } as UploadOnlineModelParams)
             _this.dialog.content = ""
@@ -786,7 +796,7 @@ export default defineComponent({
       }
       return true
     },
-    async doCheckExportStatus(instanceName: string) {
+    async doCheckExportStatus(instanceName: string, imageName: string, imageTag: string) {
       let instance = this.findInstanceByName(instanceName)
       if (!instance) {
         ElMessage.error(`获取实例 ${instanceName} 信息失败`);
@@ -795,8 +805,8 @@ export default defineComponent({
       let res = await checkExport({
         nodeIP: instance.nodeName,
         containerID: instance.containerID,
-        imageName: this.dialog.model.imageName,
-        imageVersion: this.dialog.model.imageTag,
+        imageName: imageName,
+        imageVersion: imageTag,
       })
       return res.result
     },
