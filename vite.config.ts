@@ -52,7 +52,12 @@ export default defineConfig(({ command, mode }) => {
           target: `https://www.cpeos.org.cn`,
           changeOrigin: true,
           rewrite: (path: string) => path.replace(/^\/aiDesigner\/helperApi/, ''),
-        }
+        },
+        '/aiDesigner/aiPlatformApi': {
+          target: `https://www.cpeos.org.cn`,
+          changeOrigin: true,
+          rewrite: (path: string) => path.replace(/^\/aiDesigner\/aiPlatformApi/, ''),
+        },
       },
       host: '0.0.0.0',
       port: 5173

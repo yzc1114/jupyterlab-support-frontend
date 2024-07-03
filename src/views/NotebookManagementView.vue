@@ -116,6 +116,26 @@
             <el-form-item label="说明" prop="statement">
               <el-input v-model="dialog.model.statement" placeholder="请输入说明"></el-input>
             </el-form-item>
+
+            <el-form-item label="算法环境" prop="env">
+              <el-input v-model="dialog.model.env" placeholder="请输入算法环境"></el-input>
+            </el-form-item>
+
+            <el-form-item label="算法类型" prop="type">
+              <el-radio-group v-model="dialog.model.type">
+                <el-radio label="1">场景识别</el-radio>
+                <el-radio label="2">分割分类</el-radio>
+                <el-radio label="3">目标检测</el-radio>
+                <el-radio label="4">变化检测</el-radio>
+              </el-radio-group>
+            </el-form-item>
+
+            <el-form-item label="算法用途" prop="useType">
+              <el-radio-group v-model="dialog.model.useType">
+                <el-radio label="Train">模型训练</el-radio>
+                <el-radio label="Interpret">目标解译</el-radio>
+              </el-radio-group>
+            </el-form-item>
           </el-form>
         </form>
         <span>{{ dialog.content }}</span>
@@ -132,6 +152,7 @@ import NodeStatus from '@/components/NodeStatus.vue'
 import UserInstances from '@/components/UserInstances.vue'
 import { createResource, updateResource, deleteResource, loadNodesWithInsances } from '@/api/cluster'
 import { checkExport, exportImage } from '@/api/helper'
+import { uploadOnlineModel, type UploadOnlineModelParams } from '@/api/aiplatform'
 import { createDeployYaml, createServiceYaml, createIngressYaml } from '@/utils/yaml'
 import { ElMessage } from 'element-plus'; // 引入 Element Plus 组件库中的 Message 组件
 import { type Node, type Instance } from '@/typeDefs/typeDefs'; // 假设有定义 Node 和 Instance 类型
@@ -243,7 +264,17 @@ export default defineComponent({
         statement: [
           { required: true, message: '请输入说明', trigger: 'change' },
           { min: 1, max: 50, message: '长度在 1 到 50 个字符', trigger: 'change' }
-        ]
+        ],
+        env: [
+          { required: true, message: '请输入算法环境', trigger: 'change' },
+          { min: 1, max: 50, message: '长度在 1 到 20 个字符', trigger: 'change' }
+        ],
+        type: [
+          { required: true, message: '请选择算法类型', trigger: 'change' }
+        ],
+        useType: [
+          { required: true, message: '请选择算法用途', trigger: 'change' }
+        ],
       },
       timerId: 0,
       userId: "",
@@ -268,6 +299,13 @@ export default defineComponent({
         instance: undefined as Instance | undefined,
       },
       dialog: {
+        // dataSize	数据大小	body	false	string
+        // description	描述	body	false	string
+        // env	算法环境	body	false	string
+        // name	镜像名称	body	false	string
+        // type	算法类型，1-场景识别，2-分割分类，3-目标检测，4-变化检测	body	false	integer(int32)
+        // useType	算法用途:Train-模型训练,Interpret-目标解译	body	false	string
+        // version	镜像版本	body	false	string
         open: false,
         instanceName: '',
         title: '',
@@ -278,6 +316,9 @@ export default defineComponent({
           imageName: '',
           imageTag: '',
           statement: '',
+          env: '',
+          type: '1',
+          useType: 'Train',
         },
       },
       imageOptions: [
@@ -402,9 +443,9 @@ export default defineComponent({
     handleInstanceEdit(instanceName: string) {
       this.enterInstanceEdit(instanceName)
     },
-    handleInstanceExport(instanceName: string) {
+    async handleInstanceExport(instanceName: string) {
       console.log("handleInstanceExport", instanceName)
-      this.enterInstanceExport(instanceName)
+      await this.enterInstanceExport(instanceName)
     },
     checkDuplicateInstance(instanceName: string): boolean {
       for (let node of this.nodes) {
@@ -641,17 +682,41 @@ export default defineComponent({
       }
       return undefined
     },
-    enterInstanceExport(instanceName: string) {
+    async enterInstanceExport(instanceName: string) {
       this.dialog.open = true
       this.dialog.instanceName = instanceName
       this.dialog.title = "导出镜像"
-      // this.dialog.content = "确认是否导出镜像？（将导出至共享盘）"
-      this.dialog.content = ""
+      let res = await this.doCheckExportStatus(instanceName)
+      console.log("check timer res", res)
+      if (!res) {
+        return;
+      }
+      if (res.status == "exporting") {
+        this.dialog.content = "导出中，请稍等片刻..."
+        this.dialog.confirmText = "重新导出"
+      } else {
+        this.dialog.confirmText = "导出"
+      }
       this.dialog.showConfirm = true
-      this.dialog.confirmText = "导出"
     },
     async enterWaitingExport() {
-      let res = await this.exportInstance(this.dialog.instanceName)
+      let instanceName = this.dialog.instanceName;
+      console.log("exportInstance", instanceName)
+      let instance = this.findInstanceByName(instanceName)
+      if (!instance) {
+        ElMessage.error(`获取实例 ${instanceName} 信息失败`);
+        return
+      }
+      let valid = await this.validateImageForm();
+      if (!valid) {
+        return
+      }
+      let res = await exportImage({
+        nodeIP: instance.nodeName,
+        containerID: instance.containerID,
+        imageName: this.dialog.model.imageName,
+        imageVersion: this.dialog.model.imageTag,
+      })
       console.log("enterWaitingExport", res)
       this.dialog.open = true
       this.dialog.title = "导出镜像"
@@ -660,15 +725,35 @@ export default defineComponent({
       this.dialog.confirmText = "重新导出"
       var _this = this
       let checkTimer = setInterval(async () => {
-        let res = await this.doCheckExportStatus()
+        let res = await this.doCheckExportStatus(instanceName)
         console.log("check timer res", res)
         if (!res) {
           return
         }
         if (res.status == "success") {
           clearInterval(checkTimer)
-          _this.dialog.open = false
-          ElMessage.success(`导出镜像成功。镜像已导出至目录: ${res.filepath}`);
+          try {
+            let uploadRes = await uploadOnlineModel({
+              name: _this.dialog.model.imageName,
+              version: _this.dialog.model.imageTag,
+              description: _this.dialog.model.statement,
+              env: _this.dialog.model.env,
+              type: _this.dialog.model.type,
+              useType: _this.dialog.model.useType,
+              dataSize: res.image_size,
+            } as UploadOnlineModelParams)
+            _this.dialog.content = ""
+            _this.dialog.confirmText = "导出"
+            if (uploadRes.code != 200 && uploadRes.code != 201) {
+              ElMessage.error(`导出镜像失败，原因：${uploadRes.message}`);
+              return
+            }
+            ElMessage.success(`导出镜像成功。镜像已导出至: ${res.image_full_name}。镜像大小：${res.image_size}。`);
+          } catch (e) {
+            _this.dialog.content = ""
+            _this.dialog.confirmText = "导出"
+            ElMessage.error(`导出镜像失败，原因：${e}`);
+          }
         } else if (res.status == "failed") {
           clearInterval(checkTimer)
           _this.dialog.content = "导出镜像失败，请稍后重试..."
@@ -686,8 +771,22 @@ export default defineComponent({
         }
       }, 3000)
     },
-    async doCheckExportStatus() {
-      let instanceName = this.dialog.instanceName
+    async validateImageForm(): Promise<boolean> {
+      let container_export_form: any = this.$refs.container_export_form
+      const isValid = async (_form: any) => {
+        let valid = await _form.validate().catch((err: Error) => {
+          return false
+        })
+        return valid
+      }
+      let valid = await isValid(container_export_form)
+      if (!valid) {
+        ElMessage.error("请检查输入是否正确");
+        return false
+      }
+      return true
+    },
+    async doCheckExportStatus(instanceName: string) {
       let instance = this.findInstanceByName(instanceName)
       if (!instance) {
         ElMessage.error(`获取实例 ${instanceName} 信息失败`);
@@ -695,23 +794,11 @@ export default defineComponent({
       }
       let res = await checkExport({
         nodeIP: instance.nodeName,
-        podName: instance.name,
-        containerID: instance.containerID
+        containerID: instance.containerID,
+        imageName: this.dialog.model.imageName,
+        imageVersion: this.dialog.model.imageTag,
       })
       return res.result
-    },
-    async exportInstance(instanceName: string) {
-      console.log("exportInstance", instanceName)
-      let instance = this.findInstanceByName(instanceName)
-      if (!instance) {
-        ElMessage.error(`获取实例 ${instanceName} 信息失败`);
-        return
-      }
-      return await exportImage({
-        nodeIP: instance.nodeName,
-        podName: instance.name,
-        containerID: instance.containerID
-      })
     },
   },
 });

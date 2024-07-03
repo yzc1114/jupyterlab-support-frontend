@@ -10,20 +10,23 @@ export interface JSONRPCWrapper<T> {
 
 export interface CheckExportParams {
     nodeIP: string;
-    podName: string;
     containerID: string;
+    imageName: string;
+    imageVersion: string;
 }
 
 export interface CheckExportResult {
-    filepath: string;
+    image_full_name: string;
+    image_size: string|undefined;
     message: string;
     status: string;
 }
 
 export interface ExportParams {
     nodeIP: string;
-    podName: string;
     containerID: string;
+    imageName: string;
+    imageVersion: string;
 }
 
 export interface ExportResult {
@@ -36,13 +39,14 @@ export const checkExport = async (params: CheckExportParams): Promise<JSONRPCWra
             "id": "371872469asyf93hqur",
             "jsonrpc": "2.0",
             "result": {
-                "filepath": "/data/share/pod-name-container-id.tar",
+                "image_size": "129912415",
+                "image_full_name": "10.1.75.33:30003/library/admin/image_name:version",
                 "message": "导出成功",
                 "status": "success"
             }
         }
     }
-    const response = await helperClient.get(`/check_export/${params.nodeIP}/${params.podName}/${params.containerID}`)
+    const response = await helperClient.get(`/check_export/${params.nodeIP}/${params.containerID}/${params.imageName}/${params.imageVersion}`)
     return response.data;
 };
 
@@ -56,6 +60,6 @@ export const exportImage = async (params: ExportParams): Promise<JSONRPCWrapper<
             }
         }
     }
-    const response = await helperClient.get(`/export/${params.nodeIP}/${params.podName}/${params.containerID}`)
+    const response = await helperClient.get(`/export/${params.nodeIP}/${params.containerID}/${params.imageName}/${params.imageVersion}`)
     return response.data;
 };
