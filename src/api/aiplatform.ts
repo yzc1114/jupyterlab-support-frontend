@@ -34,9 +34,6 @@ export const uploadOnlineModel = async (params: UploadOnlineModelParams): Promis
             data: {}
         }
     }
-    let packedParams = {
-        imagesDTO: params
-    };
-    const response = await aiPlatformClient.post<UploadOnlineModelResponse>('/ai-platform/algorithm/package/onlineModel', packedParams);
+    const response = await aiPlatformClient.post<UploadOnlineModelResponse>('/ai-platform/algorithm/package/onlineModel', params);
     return response.data;
 }
