@@ -154,6 +154,7 @@ import { createResource, updateResource, deleteResource, loadNodesWithInsances }
 import { checkExport, exportImage } from '@/api/helper'
 import { uploadOnlineModel, type UploadOnlineModelParams } from '@/api/aiplatform'
 import { createDeployYaml, createServiceYaml, createIngressYaml } from '@/utils/yaml'
+import { convertByteToProperUnit } from '@/utils/unit'
 import { ElMessage } from 'element-plus'; // 引入 Element Plus 组件库中的 Message 组件
 import { type Node, type Instance } from '@/typeDefs/typeDefs'; // 假设有定义 Node 和 Instance 类型
 import { convertCPUToCore } from '@/utils/unit';
@@ -252,13 +253,15 @@ export default defineComponent({
       },
       imageRules: {
         imageName: [
+          // 仅可包含小写字母、数字、中划线，且不能以中划线开头或结尾
           { required: true, message: '请输入镜像名称', trigger: 'change', },
           { pattern: /^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/, message: '镜像名称只能包含小写字母、数字、中划线，且不能以中划线开头或结尾', trigger: 'change' },
           { min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'change' }
         ],
         imageTag: [
+          // 仅可包含小写字母、数字、中划线、句点，且不能以中划线或句点开头或结尾
           { required: true, message: '请输入镜像tag', trigger: 'change' },
-          { pattern: /^[a-z0-9]([a-z0-9]*[a-z0-9])?$/, message: '镜像tag只能包含小写字母、数字', trigger: 'change' },
+          { pattern: /^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$/, message: '镜像tag只能包含小写字母、数字、中划线、句点，且不能以中划线或句点开头或结尾', trigger: 'change' },
           { min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'change' }
         ],
         statement: [
@@ -743,6 +746,8 @@ export default defineComponent({
         if (res.status == "success") {
           clearInterval(checkTimer)
           try {
+            let image_size_in_bytes = Number(res.image_size)
+            let image_size = convertByteToProperUnit(image_size_in_bytes)
             let uploadRes = await uploadOnlineModel({
               name: imageName,
               version: imageTag,
@@ -750,7 +755,7 @@ export default defineComponent({
               env: env,
               type: type,
               useType: useType,
-              dataSize: res.image_size,
+              dataSize: image_size,
             } as UploadOnlineModelParams)
             _this.dialog.content = ""
             _this.dialog.confirmText = "导出"
@@ -758,7 +763,7 @@ export default defineComponent({
               ElMessage.error(`导出镜像失败，原因：${uploadRes.message}`);
               return
             }
-            ElMessage.success(`导出镜像成功。镜像已导出至: ${res.image_full_name}。镜像大小：${res.image_size}。`);
+            ElMessage.success(`导出镜像成功。镜像已导出至: ${res.image_full_name}。镜像大小：${image_size}。`);
           } catch (e) {
             _this.dialog.content = ""
             _this.dialog.confirmText = "导出"

@@ -33,6 +33,35 @@ export function convertToGB(input: string): number {
     return 0;
 }
 
+export function convertByteToProperUnit(input: number): string {
+  // 定义字节与单位的映射关系
+  const bytesToUnit: { [key: string]: number } = {
+    B: 1,
+    K: 1000,
+    M: 1000 * 1000,
+    G: 1000 * 1000 * 1000,
+    T: 1000 * 1000 * 1000 * 1000,
+  };
+
+  // 初始化单位为字节
+  let unit = "B";
+  let value = input;
+
+  // 从最大单位开始遍历，找到合适的单位
+  for (const [key, bytes] of Object.entries(bytesToUnit).reverse()) {
+    if (input >= bytes) {
+      // 计算对应单位的值
+      value = input / bytes;
+      // 保留两位小数
+      value = Math.round(value * 100) / 100;
+      unit = key;
+      break;
+    }
+  }
+
+  return `${value}${unit}`;
+}
+
 export function convertCPUToCore(input: string): number {
   // cpu can be in the format of 100m or 1
   // 100m means 100 milli core, 1 means 1 core
