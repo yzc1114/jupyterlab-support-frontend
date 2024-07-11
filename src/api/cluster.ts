@@ -14,7 +14,18 @@ export const loadNodesWithInsances = async (userId: string) => {
     if (nodesResponse.code != 20000) {
         throw new Error(nodesResponse.message);
     }
-    let nodeWhiteList = ["10.1.75.10", "10.1.75.11", "10.1.75.12", "10.1.75.14", "10.1.75.15", "10.1.75.16", "10.1.75.17", "10.1.75.18", "10.1.75.33", "10.1.75.34", "ecs-2503"]
+    let nodeWhiteList = [
+        "10.1.75.10",
+        "10.1.75.11",
+        "10.1.75.12",
+        "10.1.75.14",
+        "10.1.75.15",
+        "10.1.75.16",
+        // "10.1.75.17",
+        "10.1.75.18",
+        // "10.1.75.33",
+        "10.1.75.34",
+        "ecs-2503"]
     let nodes: any[] = nodesResponse.data.items // Explicitly define the type of "nodes" as "any[]"
     // filter nodes
     nodes = nodes.filter((node: any) => nodeWhiteList.includes(node.metadata.name))
@@ -37,10 +48,13 @@ export const loadNodesWithInsances = async (userId: string) => {
                 continue
             }
             let instance: Instance = parseInstance(pod)
-            nodeInfo.gpuUsed += instance.gpuUsage
-            nodeInfo.gpuMemUsed += instance.gpuMemUsage
-            nodeInfo.memoryUsed += instance.memoryUsage
-            nodeInfo.cpuUsed += instance.cpuUsage
+            let includeBadStatus = ["Pending", "Failed", "Unknown", "Terminating"].includes(instance.status);
+            if (!includeBadStatus) {
+                nodeInfo.gpuUsed += instance.gpuUsage
+                nodeInfo.gpuMemUsed += instance.gpuMemUsage
+                nodeInfo.memoryUsed += instance.memoryUsage
+                nodeInfo.cpuUsed += instance.cpuUsage
+            }
             if (userId == "admin") {
                 nodeInfo.instances.push(instance)
             } else if (instance.user == userId) {
